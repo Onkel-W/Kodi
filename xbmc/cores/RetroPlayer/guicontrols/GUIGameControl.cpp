@@ -26,12 +26,15 @@
 #include "cores/RetroPlayer/rendering/RenderSettings.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
 #include "games/GameServices.h"
+#include "games/dialogs/DialogGameDefines.h"
 #include "windowing/GraphicContext.h"
 #include "utils/TransformMatrix.h"
 #include "settings/GameSettings.h"
 #include "settings/MediaSettings.h"
 #include "utils/Geometry.h"
 #include "utils/StringUtils.h"
+#include "utils/TransformMatrix.h"
+#include "windowing/GraphicContext.h"
 #include "Application.h"
 #include "ApplicationPlayer.h"
 #include "ServiceBroker.h"
@@ -55,6 +58,7 @@ CGUIGameControl::CGUIGameControl(int parentID, int controlID, float posX, float 
 
 CGUIGameControl::CGUIGameControl(const CGUIGameControl &other) :
   CGUIControl(other),
+  m_videoFilterInfo(other.m_videoFilterInfo),
   m_scalingMethodInfo(other.m_scalingMethodInfo),
   m_viewModeInfo(other.m_viewModeInfo),
   m_bHasScalingMethod(other.m_bHasScalingMethod),
@@ -69,6 +73,11 @@ CGUIGameControl::CGUIGameControl(const CGUIGameControl &other) :
 CGUIGameControl::~CGUIGameControl()
 {
   UnregisterControl();
+}
+
+void CGUIGameControl::SetVideoFilter(const GUILIB::GUIINFO::CGUIInfoLabel &videoFilter)
+{
+  m_videoFilterInfo = videoFilter;
 }
 
 void CGUIGameControl::SetScalingMethod(const GUILIB::GUIINFO::CGUIInfoLabel &scalingMethod)
@@ -139,6 +148,16 @@ void CGUIGameControl::UpdateInfo(const CGUIListItem *item /* = nullptr */)
 
   if (item)
   {
+    std::string videoFilter = m_videoFilterInfo.GetItemLabel(item);
+    if (!videoFilter.empty())
+    {
+      if (videoFilter == PROPERTY_NO_VIDEO_FILTER)
+        videoFilter.clear();
+
+      m_renderSettings->SetShaderPreset(videoFilter);
+      m_bHasShaderPreset = true;
+    }
+
     std::string strScalingMethod = m_scalingMethodInfo.GetItemLabel(item);
     if (StringUtils::IsNaturalNumber(strScalingMethod))
     {
@@ -161,6 +180,7 @@ void CGUIGameControl::UpdateInfo(const CGUIListItem *item /* = nullptr */)
 
 void CGUIGameControl::Reset()
 {
+  m_bHasShaderPreset = false;
   m_bHasScalingMethod = false;
   m_bHasViewMode = false;
   m_renderSettings->Reset();

@@ -25,18 +25,23 @@ using namespace RETRO;
 
 void CRenderVideoSettings::Reset()
 {
+  m_shaderPreset.clear();
   m_scalingMethod = VS_SCALINGMETHOD_AUTO;
   m_viewMode = ViewModeNormal;
 }
 
 bool CRenderVideoSettings::operator==(const CRenderVideoSettings &rhs) const
 {
-  return m_scalingMethod == rhs.m_scalingMethod &&
+  return m_shaderPreset == rhs.m_shaderPreset &&
+         m_scalingMethod == rhs.m_scalingMethod &&
          m_viewMode == rhs.m_viewMode;
 }
 
 bool CRenderVideoSettings::operator<(const CRenderVideoSettings &rhs) const
 {
+  if (m_shaderPreset < rhs.m_shaderPreset) return true;
+  if (m_shaderPreset > rhs.m_shaderPreset) return false;
+
   if (m_scalingMethod < rhs.m_scalingMethod) return true;
   if (m_scalingMethod > rhs.m_scalingMethod) return false;
 

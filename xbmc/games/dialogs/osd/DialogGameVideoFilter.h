@@ -44,8 +44,18 @@ namespace GAME
 
   private:
     void InitScalingMethods();
+    void InitVideoFilters();
 
-    static void GetProperties(const CFileItem &item, ESCALINGMETHOD &scalingMethod, std::string &description);
+    static std::string GetLocalizedString(uint32_t code);
+    static void GetProperties(const CFileItem &item, std::string &videoPreset, ESCALINGMETHOD &scalingMethod, std::string &description);
+
+    struct VideoFilterProperties
+    {
+      std::string path;
+      int nameIndex;
+      int categoryIndex;
+      int descriptionIndex;
+    };
 
     CFileItemList m_items;
 

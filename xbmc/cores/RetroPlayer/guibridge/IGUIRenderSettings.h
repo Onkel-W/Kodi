@@ -34,6 +34,11 @@ namespace RETRO
     virtual ~IGUIRenderSettings() = default;
 
     /*!
+     * \brief Returns true if this render target has a shader preset set
+     */
+    virtual bool HasShaderPreset() const { return true; }
+
+    /*!
      * \brief Returns true if this render target has a scaling method set
      */
     virtual bool HasScalingMethod() const { return true; }

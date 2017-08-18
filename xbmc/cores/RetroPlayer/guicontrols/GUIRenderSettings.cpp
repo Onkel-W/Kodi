@@ -30,6 +30,11 @@ CGUIRenderSettings::CGUIRenderSettings(CGUIGameControl &guiControl) :
 {
 }
 
+bool CGUIRenderSettings::HasShaderPreset() const
+{
+  return m_guiControl.HasShaderPreset();
+}
+
 bool CGUIRenderSettings::HasScalingMethod() const
 {
   return m_guiControl.HasScalingMethod();
@@ -66,6 +71,13 @@ void CGUIRenderSettings::SetGeometry(CRenderGeometry geometry)
   CSingleLock lock(m_mutex);
 
   m_renderSettings.Geometry() = std::move(geometry);
+}
+
+void CGUIRenderSettings::SetShaderPreset(const std::string &shaderPreset)
+{
+  CSingleLock lock(m_mutex);
+
+  m_renderSettings.VideoSettings().SetShaderPreset(shaderPreset);
 }
 
 void CGUIRenderSettings::SetScalingMethod(ESCALINGMETHOD scalingMethod)

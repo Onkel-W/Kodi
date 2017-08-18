@@ -17,23 +17,23 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include "cores/IPlayer.h"
+#include "VideoShaderUtils.h"
 
-#include <string>
+using namespace KODI;
+using namespace SHADER;
 
-namespace KODI
+float2 CVideoShaderUtils::GetOptimalTextureSize(float2 videoSize)
 {
-namespace RETRO
-{
-  class IRenderCallback
+  unsigned sizeMax = videoSize.Max<unsigned>();
+  unsigned size = 1;
+
+  // Find smallest possible power-of-two size that can contain input texture
+  while (true)
   {
-  public:
-    virtual ~IRenderCallback() = default;
-
-    virtual bool SupportsRenderFeature(ERENDERFEATURE feature) const = 0;
-    virtual bool SupportsScalingMethod(ESCALINGMETHOD method) const = 0;
-  };
-}
+    if (size >= sizeMax)
+      break;
+    size *= 2;
+  }
+  return float2(size, size);
 }

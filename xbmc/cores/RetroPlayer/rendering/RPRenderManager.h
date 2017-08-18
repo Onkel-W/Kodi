@@ -173,6 +173,7 @@ namespace RETRO
     std::vector<uint8_t> m_cachedFrame;
     std::map<AVPixelFormat, SwsContext*> m_scalers;
     bool m_bHasCachedFrame = false;
+    std::set<std::string> m_failedShaderPresets;
     bool m_bTriggerUpdateResolution = false;
     CCriticalSection m_stateMutex;
     CCriticalSection m_bufferMutex;

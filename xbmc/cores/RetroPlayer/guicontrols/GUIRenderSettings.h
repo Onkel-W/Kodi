@@ -38,6 +38,7 @@ namespace RETRO
     ~CGUIRenderSettings() override = default;
 
     // implementation of IGUIRenderSettings
+    bool HasShaderPreset() const override;
     bool HasScalingMethod() const override;
     bool HasViewMode() const override;
     CRenderSettings GetSettings() const override;
@@ -46,6 +47,7 @@ namespace RETRO
     void Reset();
     void SetSettings(CRenderSettings settings);
     void SetGeometry(CRenderGeometry geometry);
+    void SetShaderPreset(const std::string &shaderPreset);
     void SetScalingMethod(ESCALINGMETHOD scalingMethod);
     void SetViewMode(ViewMode viewMode);
 

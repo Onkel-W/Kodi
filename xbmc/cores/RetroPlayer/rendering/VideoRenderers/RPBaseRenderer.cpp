@@ -21,6 +21,7 @@
 #include "RPBaseRenderer.h"
 #include "cores/RetroPlayer/buffers/IRenderBuffer.h"
 #include "cores/RetroPlayer/buffers/IRenderBufferPool.h"
+#include "cores/RetroPlayer/rendering/VideoShaders/IVideoShaderPreset.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "settings/Settings.h"
 #include "utils/log.h"
@@ -40,7 +41,9 @@ using namespace RETRO;
 CRPBaseRenderer::CRPBaseRenderer(const CRenderSettings &renderSettings, CRenderContext &context, std::shared_ptr<IRenderBufferPool> bufferPool) :
   m_context(context),
   m_bufferPool(std::move(bufferPool)),
-  m_renderSettings(renderSettings)
+  m_renderSettings(renderSettings),
+  m_shadersNeedUpdate(true),
+  m_bUseShaderPreset(false)
 {
   m_oldDestRect.SetRect(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -63,6 +66,14 @@ CRPBaseRenderer::~CRPBaseRenderer()
 bool CRPBaseRenderer::IsCompatible(const CRenderVideoSettings &settings) const
 {
   if (!m_bufferPool->IsCompatible(settings))
+    return false;
+
+  // Shader preset must match
+  std::string shaderPreset;
+  if (m_shaderPreset)
+    shaderPreset = m_shaderPreset->GetShaderPreset();
+
+  if (settings.GetShaderPreset() != shaderPreset)
     return false;
 
   return true;
@@ -141,6 +152,12 @@ void CRPBaseRenderer::Flush()
   FlushInternal();
 }
 
+void CRPBaseRenderer::SetSpeed(double speed)
+{
+  if (m_shaderPreset)
+    m_shaderPreset->SetSpeed(speed);
+}
+
 void CRPBaseRenderer::GetVideoRect(CRect &source, CRect &dest, CRect &view) const
 {
   source = m_sourceRect;
@@ -151,6 +168,15 @@ void CRPBaseRenderer::GetVideoRect(CRect &source, CRect &dest, CRect &view) cons
 float CRPBaseRenderer::GetAspectRatio() const
 {
   return m_sourceFrameRatio;
+}
+
+void CRPBaseRenderer::SetShaderPreset(const std::string &presetPath)
+{
+  if (presetPath != m_renderSettings.VideoSettings().GetShaderPreset())
+  {
+    m_renderSettings.VideoSettings().SetShaderPreset(presetPath);
+    m_shadersNeedUpdate = true;
+  }
 }
 
 void CRPBaseRenderer::SetScalingMethod(ESCALINGMETHOD method)
@@ -551,6 +577,24 @@ float CRPBaseRenderer::GetAllowedErrorInAspect() const
   return CServiceBroker::GetSettings().GetInt(CSettings::SETTING_VIDEOPLAYER_ERRORINASPECT) * 0.01f;
 }
 
+void CRPBaseRenderer::UpdateVideoShaders()
+{
+  if (m_shadersNeedUpdate && !m_renderSettings.VideoSettings().GetShaderPreset().empty())
+  {
+    m_shadersNeedUpdate = false;
+
+    if (m_shaderPreset)
+    {
+      auto sourceWidth = static_cast<unsigned>(m_sourceRect.Width());
+      auto sourceHeight = static_cast<unsigned>(m_sourceRect.Height());
+
+      // We need to set this here because m_sourceRect isn't valid on init/pre-init
+      m_shaderPreset->SetVideoSize(sourceWidth, sourceHeight);
+      m_bUseShaderPreset = m_shaderPreset->SetShaderPreset(m_renderSettings.VideoSettings().GetShaderPreset());
+    }
+  }
+}
+
 void CRPBaseRenderer::PreRender(bool clear)
 {
   if (!m_bConfigured)
@@ -561,6 +605,8 @@ void CRPBaseRenderer::PreRender(bool clear)
     m_context.Clear(m_context.UseLimitedColor() ? 0x101010 : 0);
 
   ManageRenderArea();
+
+  UpdateVideoShaders();
 }
 
 void CRPBaseRenderer::PostRender()

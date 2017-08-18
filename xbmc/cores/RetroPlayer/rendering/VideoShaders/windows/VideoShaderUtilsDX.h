@@ -1,3 +1,4 @@
+#pragma once
 /*
  *      Copyright (C) 2017 Team Kodi
  *      http://kodi.tv
@@ -17,23 +18,30 @@
  *  <http://www.gnu.org/licenses/>.
  *
  */
-#pragma once
 
-#include "cores/IPlayer.h"
-
-#include <string>
+#include <minwindef.h>
 
 namespace KODI
 {
-namespace RETRO
+namespace SHADER
 {
-  class IRenderCallback
+  /* todo
+  operator DirectX::XMFLOAT2(const float2& f) const
   {
-  public:
-    virtual ~IRenderCallback() = default;
+    return DirectX::XMFLOAT2(static_cast<float>(f.x), static_cast<float>(f.y));
+  }
+  */
 
-    virtual bool SupportsRenderFeature(ERENDERFEATURE feature) const = 0;
-    virtual bool SupportsScalingMethod(ESCALINGMETHOD method) const = 0;
+  struct CUSTOMVERTEX
+  {
+    // Vertex positions
+    FLOAT x;
+    FLOAT y;
+    FLOAT z;
+
+    // Texture coordinates
+    FLOAT tu;
+    FLOAT tv;
   };
 }
 }

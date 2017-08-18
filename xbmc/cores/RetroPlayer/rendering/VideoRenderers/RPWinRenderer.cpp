@@ -21,8 +21,11 @@
 #include "RPWinRenderer.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderTranslator.h"
+
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
 #include "cores/RetroPlayer/rendering/VideoShaders/windows/RPWinOutputShader.h"
+#include "cores/RetroPlayer/rendering/VideoShaders/windows/VideoShaderPresetDX.h"
+#include "cores/RetroPlayer/rendering/VideoShaders/windows/VideoShaderTextureDX.h"
 #include "guilib/D3DResource.h"
 #include "rendering/dx/RenderSystemDX.h"
 #include "utils/log.h"
@@ -67,7 +70,7 @@ CWinRenderBuffer::CWinRenderBuffer(AVPixelFormat pixFormat, DXGI_FORMAT dxFormat
 
 bool CWinRenderBuffer::CreateTexture()
 {
-  if (!m_intermediateTarget->Create(m_width, m_height, 1, D3D11_USAGE_DYNAMIC, m_targetDxFormat))
+  if (!m_intermediateTarget->GetPointer()->Create(m_width, m_height, 1, D3D11_USAGE_DYNAMIC, m_targetDxFormat))
   {
     CLog::Log(LOGERROR, "WinRenderer: Intermediate render target creation failed");
     return false;
@@ -80,7 +83,7 @@ bool CWinRenderBuffer::GetTexture(uint8_t*& data, unsigned int& stride)
 {
   // Scale and upload texture
   D3D11_MAPPED_SUBRESOURCE destlr;
-  if (!m_intermediateTarget->LockRect(0, &destlr, D3D11_MAP_WRITE_DISCARD))
+  if (!m_intermediateTarget->GetPointer()->LockRect(0, &destlr, D3D11_MAP_WRITE_DISCARD))
   {
     CLog::Log(LOGERROR, "WinRenderer: Failed to lock swtarget texture into memory");
     return false;
@@ -94,7 +97,7 @@ bool CWinRenderBuffer::GetTexture(uint8_t*& data, unsigned int& stride)
 
 bool CWinRenderBuffer::ReleaseTexture()
 {
-  if (!m_intermediateTarget->UnlockRect(0))
+  if (!m_intermediateTarget->GetPointer()->UnlockRect(0))
   {
     CLog::Log(LOGERROR, "WinRenderer: Failed to unlock swtarget texture");
     return false;
@@ -117,7 +120,7 @@ bool CWinRenderBuffer::UploadTexture()
   // Create intermediate texture
   if (!m_intermediateTarget)
   {
-    m_intermediateTarget.reset(new CD3DTexture);
+    m_intermediateTarget.reset(new SHADER::CShaderTextureCD3D(new CD3DTexture));
     if (!CreateTexture())
     {
       m_intermediateTarget.reset();
@@ -180,6 +183,13 @@ CWinRenderBufferPool::CWinRenderBufferPool()
 
 bool CWinRenderBufferPool::IsCompatible(const CRenderVideoSettings &renderSettings) const
 {
+  //! @todo Move this logic to generic class
+
+  // Shader presets are compatible
+  if (!renderSettings.GetShaderPreset().empty())
+    return true;
+
+  // If no shader preset is specified, scaling methods must match
   return GetShader(renderSettings.GetScalingMethod()) != nullptr;
 }
 
@@ -236,11 +246,53 @@ void CWinRenderBufferPool::CompileOutputShaders()
 CRPWinRenderer::CRPWinRenderer(const CRenderSettings &renderSettings, CRenderContext &context, std::shared_ptr<IRenderBufferPool> bufferPool) :
   CRPBaseRenderer(renderSettings, context, std::move(bufferPool))
 {
+  // Initialize CRPBaseRenderer fields
+  m_shaderPreset.reset(new SHADER::CVideoShaderPresetDX(m_context));
+
+  // Compile the output shaders
+  // TODO: Should we do that if shader presets are enabled?
+  ESCALINGMETHOD defaultScalingMethod = renderSettings.VideoSettings().GetScalingMethod();
+  CompileOutputShaders(defaultScalingMethod);
 }
 
 CRPWinRenderer::~CRPWinRenderer()
 {
   Deinitialize();
+}
+
+void CRPWinRenderer::CompileOutputShaders(ESCALINGMETHOD defaultScalingMethod)
+{
+  auto compileAndRegisterShader = [this] (ESCALINGMETHOD scalingMethod, const char* scalingMethodString)
+  {
+    CRPWinOutputShader* outputShader = new CRPWinOutputShader;
+    if (!outputShader->Create(scalingMethod))
+      CLog::Log(LOGERROR, "RPWinRenderer: Unable to create output shader (%s)", scalingMethodString);
+    m_outputShaders[scalingMethod].reset(outputShader);
+  };
+
+  // compile with linear scaling
+  compileAndRegisterShader(VS_SCALINGMETHOD_LINEAR, "linear");
+
+  // compile with nearest neighbor scaling
+  compileAndRegisterShader(VS_SCALINGMETHOD_NEAREST, "nearest");
+
+  // Fill all remaining keys
+
+  // Use `defaultScalingMethod` if our output shader implements it
+  // if not, default to nearest neighbor scaling
+  std::shared_ptr<CRPWinOutputShader> defaultScalingShader;
+  if (m_outputShaders.count(defaultScalingMethod) != 0)
+    defaultScalingShader = m_outputShaders[defaultScalingMethod];
+  else
+    defaultScalingShader = m_outputShaders[VS_SCALINGMETHOD_NEAREST];
+
+  for (int s = VS_SCALINGMETHOD_NEAREST; s != VS_SCALINGMETHOD_MAX; ++s)
+  {
+    auto scalingMethod = static_cast<ESCALINGMETHOD>(s);
+
+    if (m_outputShaders.count(scalingMethod) == 0)
+      m_outputShaders[scalingMethod] = defaultScalingShader;
+  }
 }
 
 bool CRPWinRenderer::ConfigureInternal()
@@ -277,10 +329,16 @@ bool CRPWinRenderer::Supports(ERENDERFEATURE feature) const
   return false;
 }
 
+bool CRPWinRenderer::Supports(ESCALINGMETHOD method) const
+{
+  return SupportsScalingMethod(method);
+}
+
 bool CRPWinRenderer::SupportsScalingMethod(ESCALINGMETHOD method)
 {
   if (method == VS_SCALINGMETHOD_LINEAR ||
-      method == VS_SCALINGMETHOD_NEAREST)
+      method == VS_SCALINGMETHOD_NEAREST ||
+      method == VS_SCALINGMETHOD_AUTO)
     return true;
 
   return false;
@@ -288,9 +346,47 @@ bool CRPWinRenderer::SupportsScalingMethod(ESCALINGMETHOD method)
 
 void CRPWinRenderer::Render(CD3DTexture *target)
 {
-  if (m_renderBuffer != nullptr)
+  CWinRenderBuffer *renderBuffer = static_cast<CWinRenderBuffer*>(m_renderBuffer);
+  if (renderBuffer == nullptr)
+    return;
+
+  SHADER::CShaderTextureCD3D *renderBufferTarget = renderBuffer->GetTarget();
+  if (renderBufferTarget == nullptr)
+    return;
+
+  // Are we using video shaders?
+  if (m_bUseShaderPreset && m_renderBuffer != nullptr)
   {
-    CD3DTexture *intermediateTarget = static_cast<CWinRenderBuffer*>(m_renderBuffer)->GetTarget();
+    CPoint destPoints[4];
+
+    // select destination rectangle
+    if (m_renderOrientation)
+    {
+      for (size_t i = 0; i < 4; i++)
+        destPoints[i] = m_rotatedDestCoords[i];
+    }
+    else
+    {
+      CRect destRect = m_context.StereoCorrection(m_renderSettings.Geometry().Dimensions());
+      destPoints[0] = { destRect.x1, destRect.y1 };
+      destPoints[1] = { destRect.x2, destRect.y1 };
+      destPoints[2] = { destRect.x2, destRect.y2 };
+      destPoints[3] = { destRect.x1, destRect.y2 };
+    }
+
+    CD3DTexture *intermediateTarget = renderBufferTarget->GetPointer();
+    // Render shaders and ouput to display
+    m_targetTexture.SetTexture(target);
+    if (!m_shaderPreset->RenderUpdate(destPoints, renderBufferTarget, &m_targetTexture))
+    {
+      m_shadersNeedUpdate = false;
+      m_bUseShaderPreset = false;
+    }
+  }
+  else  // Not using video shaders, output using output shader
+  {
+    CD3DTexture *intermediateTarget = renderBufferTarget->GetPointer();
+
     if (intermediateTarget != nullptr)
     {
       CRect viewPort;
@@ -298,17 +394,13 @@ void CRPWinRenderer::Render(CD3DTexture *target)
 
       // Pick appropriate output shader depending on the scaling method of the renderer
       ESCALINGMETHOD scalingMethod = m_renderSettings.VideoSettings().GetScalingMethod();
-
-      CWinRenderBufferPool *bufferPool = static_cast<CWinRenderBufferPool*>(m_bufferPool.get());
-      CRPWinOutputShader *outputShader = bufferPool->GetShader(scalingMethod);
+      CRPWinOutputShader* outputShader = m_outputShaders[scalingMethod].get();
 
       // Use the picked output shader to render to the target
-      if (outputShader != nullptr)
-      {
+      if (outputShader)
         outputShader->Render(*intermediateTarget, m_sourceWidth, m_sourceHeight,
           m_sourceRect, m_rotatedDestCoords, viewPort, target,
           m_context.UseLimitedColor() ? 1 : 0);
-      }
     }
   }
 }

@@ -32,14 +32,25 @@ CGameSettings &CGameSettings::operator=(const CGameSettings &rhs)
 
 void CGameSettings::Reset()
 {
+  m_videoFilter.clear();
   m_scalingMethod = VS_SCALINGMETHOD_AUTO;
   m_viewMode = ViewModeNormal;
 }
 
 bool CGameSettings::operator==(const CGameSettings &rhs) const
 {
-  return m_scalingMethod == rhs.m_scalingMethod &&
+  return m_videoFilter == rhs.m_videoFilter &&
+         m_scalingMethod == rhs.m_scalingMethod &&
          m_viewMode == rhs.m_viewMode;
+}
+
+void CGameSettings::SetVideoFilter(const std::string &videoFilter)
+{
+  if (videoFilter != m_videoFilter)
+  {
+    m_videoFilter = videoFilter;
+    SetChanged();
+  }
 }
 
 void CGameSettings::SetScalingMethod(ESCALINGMETHOD scalingMethod)

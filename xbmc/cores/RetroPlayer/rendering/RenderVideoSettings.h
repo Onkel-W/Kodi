@@ -40,6 +40,9 @@ namespace RETRO
     bool operator<(const CRenderVideoSettings &rhs) const;
     bool operator>(const CRenderVideoSettings &rhs) const { return !(*this == rhs || *this < rhs); }
 
+    const std::string &GetShaderPreset() const { return m_shaderPreset; }
+    void SetShaderPreset(const std::string &shaderPreset) { m_shaderPreset = shaderPreset; }
+
     ESCALINGMETHOD GetScalingMethod() const { return m_scalingMethod; }
     void SetScalingMethod(ESCALINGMETHOD method) { m_scalingMethod = method; }
 
@@ -47,6 +50,7 @@ namespace RETRO
     void SetRenderViewMode(ViewMode mode) { m_viewMode = mode; }
 
   private:
+    std::string m_shaderPreset;
     ESCALINGMETHOD m_scalingMethod;
     ViewMode m_viewMode;
   };

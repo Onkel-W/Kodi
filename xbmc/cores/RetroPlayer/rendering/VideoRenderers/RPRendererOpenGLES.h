@@ -113,6 +113,7 @@ namespace RETRO
 
     // implementation of CRPBaseRenderer
     bool Supports(ERENDERFEATURE feature) const override;
+    bool Supports(ESCALINGMETHOD method) const override;
     ESCALINGMETHOD GetDefaultScalingMethod() const override { return VS_SCALINGMETHOD_NEAREST; }
 
     static bool SupportsScalingMethod(ESCALINGMETHOD method);

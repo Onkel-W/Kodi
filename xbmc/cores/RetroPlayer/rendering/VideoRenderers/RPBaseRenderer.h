@@ -31,6 +31,11 @@
 
 namespace KODI
 {
+namespace SHADER
+{
+  class IVideoShaderPreset;
+}
+
 namespace RETRO
 {
   class CRenderContext;
@@ -57,9 +62,11 @@ namespace RETRO
     void PreRender(bool clear);
     void SetBuffer(IRenderBuffer *buffer);
     void RenderFrame(bool clear, uint8_t alpha);
+    void SetSpeed(double speed);
 
     // Feature support
     virtual bool Supports(ERENDERFEATURE feature) const = 0;
+    virtual bool Supports(ESCALINGMETHOD method) const = 0;
     bool IsCompatible(const CRenderVideoSettings &settings) const;
     virtual ESCALINGMETHOD GetDefaultScalingMethod() const = 0;
 
@@ -71,6 +78,8 @@ namespace RETRO
     const CRenderSettings &GetRenderSettings() const { return m_renderSettings; }
 
     // Set render settings
+    void SetShaderPreset(const std::string &presetPath);
+
     void SetScalingMethod(ESCALINGMETHOD method);
     void SetViewMode(ViewMode viewMode);
 
@@ -129,6 +138,13 @@ namespace RETRO
     CRect m_oldDestRect; // destrect of the previous frame
     CRect m_sourceRect;
     CRect m_viewRect;
+
+    // ====== Video Shader Members =====
+    void UpdateVideoShaders();
+    std::unique_ptr<SHADER::IVideoShaderPreset> m_shaderPreset;
+
+    bool m_shadersNeedUpdate;
+    bool m_bUseShaderPreset;
 
   private:
     bool IsNonLinearStretch() const { return m_bNonLinearStretch; }
