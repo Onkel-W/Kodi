@@ -38,6 +38,7 @@ namespace RETRO
 
     // implementation of CRPBaseRenderer
     bool Supports(RENDERFEATURE feature) const override;
+    bool Supports(SCALINGMETHOD method) const override;
     SCALINGMETHOD GetDefaultScalingMethod() const override { return SCALINGMETHOD::NEAREST; }
 
     static bool SupportsScalingMethod(SCALINGMETHOD method);

@@ -95,6 +95,11 @@ bool CRPRendererOpenGL::Supports(RENDERFEATURE feature) const
   return false;
 }
 
+bool CRPRendererOpenGL::Supports(SCALINGMETHOD method) const
+{
+  return SupportsScalingMethod(method);
+}
+
 bool CRPRendererOpenGL::SupportsScalingMethod(SCALINGMETHOD method)
 {
   if (method == SCALINGMETHOD::NEAREST ||
