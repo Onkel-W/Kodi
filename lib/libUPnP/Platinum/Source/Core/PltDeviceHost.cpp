@@ -494,7 +494,7 @@ PLT_DeviceHost::ProcessHttpPostRequest(NPT_HttpRequest&              request,
     NPT_String                soap_action_header;
     PLT_Service*              service;
     NPT_XmlElementNode*       soap_body;
-    NPT_XmlElementNode*       soap_action;
+    NPT_XmlElementNode*       soap_action = nullptr;
     PLT_ActionDesc*           action_desc;
     PLT_ActionReference       action;
     NPT_MemoryStreamReference resp(new NPT_MemoryStream);

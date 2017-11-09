@@ -702,7 +702,7 @@ PLT_CtrlPoint::DecomposeLastChangeVar(NPT_List<PLT_StateVariable*>& vars)
             // look for the instance with attribute id = 0
             NPT_XmlElementNode* instance = NULL;
             for (NPT_Cardinal i=0; i<node->GetChildren().GetItemCount(); i++) {
-                NPT_XmlElementNode* child;
+                NPT_XmlElementNode* child = nullptr;
                 if (NPT_FAILED(PLT_XmlHelper::GetChild(node, child, i)))
                     continue;
                 
