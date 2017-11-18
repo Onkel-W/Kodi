@@ -22,6 +22,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "peripherals/PeripheralTypes.h"
 #include "peripherals/bus/PeripheralBus.h"
@@ -66,6 +68,9 @@ namespace PERIPHERALS
     static bool GetDeviceId(const std::string& deviceLocation, int& deviceId);
 
     static bool ConvertToPeripheralScanResult(const CJNIViewInputDevice& inputDevice, PeripheralScanResult& peripheralScanResult);
+
+    static void LogInputDevice(const CJNIViewInputDevice &device);
+    static std::vector<std::pair<int, const char*>> GetInputSources();
 
     mutable std::map<int, CAndroidJoystickState> m_joystickStates;
     PeripheralScanResults m_scanResults;
