@@ -111,7 +111,6 @@ bool CPeripheralBusAndroid::InitializeProperties(CPeripheral& peripheral)
 
   // fill in the number of buttons, hats and axes
   joystick.SetButtonCount(state.GetButtonCount());
-  joystick.SetHatCount(state.GetHatCount());
   joystick.SetAxisCount(state.GetAxisCount());
 
   // remember the joystick state
