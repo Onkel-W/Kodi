@@ -107,12 +107,6 @@ bool CAndroidJoystickState::Initialize(const CJNIViewInputDevice& inputDevice)
     int axisId = motionRange.getAxis();
     JoystickAxis axis {
       { axisId },
-      motionRange.getFlat(),
-      motionRange.getFuzz(),
-      motionRange.getMin(),
-      motionRange.getMax(),
-      motionRange.getRange(),
-      motionRange.getResolution()
     };
 
     // check if the axis ID belongs to a D-pad, analogue stick or trigger
@@ -303,41 +297,8 @@ bool CAndroidJoystickState::SetAxisValue(const std::vector<int>& axisIds, JOYSTI
   if (!GetAxesIndex(axisIds, m_axes, axisIndex) || axisIndex >= GetAxisCount())
     return false;
 
-  const JoystickAxis& axis = m_axes[axisIndex];
-
-  // make sure that the axis value is in the valid range
-  axisValue = Contain(axisValue, axis.min, axis.max);
-  // apply deadzoning
-  axisValue = Deadzone(axisValue, axis.flat);
-  // scale the axis value down to a value between -1.0f and 1.0f
-  axisValue = Scale(axisValue, axis.max, 1.0f);
-
   m_stateBuffer.axes[axisIndex] = axisValue;
   return true;
-}
-
-float CAndroidJoystickState::Contain(float value, float min, float max)
-{
-  if (value < min)
-    return min;
-  if (value > max)
-    return max;
-
-  return value;
-}
-
-float CAndroidJoystickState::Scale(float value, float max, float scaledMax)
-{
-  return value * (scaledMax / max);
-}
-
-float CAndroidJoystickState::Deadzone(float value, float deadzone)
-{
-  if ((value > 0.0f && value < deadzone) ||
-      (value < 0.0f && value > -deadzone))
-    return 0.0f;
-
-  return value;
 }
 
 CAndroidJoystickState::JoystickAxes::const_iterator CAndroidJoystickState::GetAxis(const std::vector<int>& axisIds, const JoystickAxes& axes)
