@@ -71,19 +71,9 @@ namespace PERIPHERALS
     void GetButtonEvents(std::vector<kodi::addon::PeripheralEvent>& events) const;
     void GetAxisEvents(std::vector<kodi::addon::PeripheralEvent>& events) const;
 
-    static float Contain(float value, float min, float max);
-    static float Scale(float value, float max, float scaledMax);
-    static float Deadzone(float value, float deadzone);
-
     struct JoystickAxis
     {
       std::vector<int> ids;
-      float flat;
-      float fuzz;
-      float min;
-      float max;
-      float range;
-      float resolution;
     };
 
     using JoystickAxes = std::vector<JoystickAxis>;
