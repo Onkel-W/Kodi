@@ -343,21 +343,32 @@ bool CGUIControlFactory::GetInfoTexture(const TiXmlNode* pRootNode, const char* 
 bool CGUIControlFactory::GetTexture(const TiXmlNode* pRootNode, const char* strTag, CTextureInfo &image)
 {
   const TiXmlElement* pNode = pRootNode->FirstChildElement(strTag);
-  if (!pNode) return false;
+  if (!pNode)
+    return false;
+
   const char *border = pNode->Attribute("border");
   if (border)
     GetRectFromString(border, image.border);
+
   image.orientation = 0;
+
   const char *flipX = pNode->Attribute("flipx");
-  if (flipX && strcmpi(flipX, "true") == 0) image.orientation = 1;
+  if (flipX && strcmpi(flipX, "true") == 0)
+    image.orientation = 1;
+
   const char *flipY = pNode->Attribute("flipy");
-  if (flipY && strcmpi(flipY, "true") == 0) image.orientation = 3 - image.orientation;  // either 3 or 2
+  if (flipY && strcmpi(flipY, "true") == 0)
+    image.orientation = 3 - image.orientation;  // either 3 or 2
+
   image.diffuse = XMLUtils::GetAttribute(pNode, "diffuse");
   image.diffuseColor.Parse(XMLUtils::GetAttribute(pNode, "colordiffuse"), 0);
+
   const char *background = pNode->Attribute("background");
   if (background && strnicmp(background, "true", 4) == 0)
     image.useLarge = true;
+
   image.filename = pNode->FirstChild() ? pNode->FirstChild()->Value() : "";
+
   return true;
 }
 
