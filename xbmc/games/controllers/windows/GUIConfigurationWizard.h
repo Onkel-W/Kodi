@@ -21,9 +21,9 @@
 
 #include "IConfigurationWindow.h"
 #include "games/controllers/ControllerFeature.h"
+#include "input/actions/interfaces/IActionHandler.h"
 #include "input/joysticks/DriverPrimitive.h"
 #include "input/joysticks/interfaces/IButtonMapper.h"
-#include "input/keyboard/interfaces/IKeyboardDriverHandler.h"
 #include "input/XBMC_keysym.h"
 #include "threads/CriticalSection.h"
 #include "threads/Event.h"
@@ -47,7 +47,7 @@ namespace GAME
 {
   class CGUIConfigurationWizard : public IConfigurationWizard,
                                   public JOYSTICK::IButtonMapper,
-                                  public KEYBOARD::IKeyboardDriverHandler,
+                                  public ACTION::IActionHandler,
                                   public Observer,
                                   protected CThread
   {
@@ -72,9 +72,8 @@ namespace GAME
     virtual void OnEventFrame(const JOYSTICK::IButtonMap* buttonMap, bool bMotion) override;
     virtual void OnLateAxis(const JOYSTICK::IButtonMap* buttonMap, unsigned int axisIndex) override;
 
-    // implementation of IKeyboardDriverHandler
-    virtual bool OnKeyPress(const CKey& key) override;
-    virtual void OnKeyRelease(const CKey& key) override { }
+    // implementation of IActionHandler
+    bool HandleAction(const CAction &action) override;
 
     // implementation of Observer
     virtual void Notify(const Observable& obs, const ObservableMessage msg) override;
