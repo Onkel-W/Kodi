@@ -33,6 +33,7 @@ addons/script.module.idna/*
 addons/script.module.requests/*
 addons/script.module.six/*
 addons/script.module.urllib3/*
+addons/plugin.program.iarl/*
 addons/resource.language.en_gb/*
 addons/resource.uisounds.kodi/*
 addons/resource.images.weathericons.default/*

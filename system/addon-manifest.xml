@@ -37,6 +37,7 @@
   <addon>metadata.local</addon>
   <addon>metadata.themoviedb.org</addon>
   <addon>metadata.tvdb.com</addon>
+  <addon>plugin.program.iarl</addon>
   <addon>plugin.video.youtube</addon>
   <addon>repository.xbmc.org</addon>
   <addon>resource.images.weathericons.default</addon>
