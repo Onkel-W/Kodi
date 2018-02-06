@@ -25,6 +25,14 @@ addons/screensaver.xbmc.builtin.black/*
 addons/script.module.pil/*
 addons/script.module.pycryptodome/*
 addons/script.module.pysqlite/*
+addons/plugin.video.youtube/*
+addons/script.module.certifi/*
+addons/script.module.chardet/*
+addons/script.module.dateutil/*
+addons/script.module.idna/*
+addons/script.module.requests/*
+addons/script.module.six/*
+addons/script.module.urllib3/*
 addons/resource.language.en_gb/*
 addons/resource.uisounds.kodi/*
 addons/resource.images.weathericons.default/*
