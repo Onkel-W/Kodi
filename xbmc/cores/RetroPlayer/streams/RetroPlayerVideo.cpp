@@ -44,35 +44,67 @@ CRetroPlayerVideo::~CRetroPlayerVideo()
   m_renderManager.Deinitialize();
 }
 
-bool CRetroPlayerVideo::OpenPixelStream(AVPixelFormat pixfmt, unsigned int width, unsigned int height, unsigned int orientationDeg)
+bool CRetroPlayerVideo::OpenStream(AVPixelFormat pixfmt, unsigned int nominalWidth, unsigned int nominalHeight, unsigned int maxWidth, unsigned int maxHeight, float aspectRatio)
 {
-  CLog::Log(LOGDEBUG, "RetroPlayer[VIDEO]: Creating video stream - format %s, %ux%u, %u deg",
+  if (m_bOpen)
+  {
+    CloseStream();
+    m_bOpen = false;
+  }
+
+  CLog::Log(LOGDEBUG, "RetroPlayer[VIDEO]: Creating video stream - format %s, nominal %ux%u, max %ux%u",
       CRenderTranslator::TranslatePixelFormat(pixfmt),
-      width,
-      height,
-      orientationDeg);
+      nominalWidth,
+      nominalHeight,
+      maxWidth,
+      maxHeight);
 
   m_processInfo.SetVideoPixelFormat(pixfmt);
-  m_processInfo.SetVideoDimensions(width, height);
+  m_processInfo.SetVideoDimensions(nominalWidth, nominalHeight); // Report nominal height for now
 
-  return m_renderManager.Configure(pixfmt, width, height, orientationDeg);
+  if (m_renderManager.Configure(pixfmt, nominalWidth, nominalHeight, maxWidth, maxHeight))
+    m_bOpen = true;
+
+  return m_bOpen;
 }
 
-bool CRetroPlayerVideo::OpenEncodedStream(AVCodecID codec)
+void CRetroPlayerVideo::AddStreamData(const StreamPacket &packet)
 {
-  CLog::Log(LOGERROR, "RetroPlayer[VIDEO]: Encoded video stream not supported");
+  const VideoStreamPacket& videoPacket = static_cast<const VideoStreamPacket&>(packet);
 
-  return false; //! @todo
-}
+  if (m_bOpen)
+  {
+    unsigned int orientationDegCCW = 0;
+    switch (videoPacket.rotation)
+    {
+    case VideoRotation::ROTATION_90_CCW:
+      orientationDegCCW = 90;
+      break;
+    case VideoRotation::ROTATION_180_CCW:
+      orientationDegCCW = 180;
+      break;
+    case VideoRotation::ROTATION_270_CCW:
+      orientationDegCCW = 270;
+      break;
+    default:
+      break;
+    }
 
-void CRetroPlayerVideo::AddData(const uint8_t* data, size_t size)
-{
-  m_renderManager.AddFrame(data, size);
+    m_renderManager.AddFrame(videoPacket.data,
+                             videoPacket.size,
+                             videoPacket.width,
+                             videoPacket.height,
+                             orientationDegCCW);
+  }
 }
 
 void CRetroPlayerVideo::CloseStream()
 {
-  CLog::Log(LOGDEBUG, "RetroPlayer[VIDEO]: Closing video stream");
+  if (m_bOpen)
+  {
+    CLog::Log(LOGDEBUG, "RetroPlayer[VIDEO]: Closing video stream");
 
-  m_renderManager.Flush();
+    m_renderManager.Flush();
+    m_bOpen = false;
+  }
 }

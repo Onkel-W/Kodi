@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2016-2017 Team Kodi
+ *      Copyright (C) 2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -19,16 +19,13 @@
  */
 #pragma once
 
-namespace KODI
-{
-namespace GAME
-{
-  class IGameInputCallback
-  {
-  public:
-    virtual ~IGameInputCallback() = default;
+#include "RetroPlayerStreamTypes.h"
+#include "IRetroPlayerStream.h"
 
-    virtual void PollInput() = 0;
-  };
-}
+using namespace KODI;
+using namespace RETRO;
+
+void DeleteStream::operator()(IRetroPlayerStream* stream)
+{
+  delete stream;
 }

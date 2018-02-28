@@ -19,7 +19,8 @@
  */
 #pragma once
 
-#include "games/addons/GameClientCallbacks.h"
+#include "IRetroPlayerStream.h"
+#include "RetroPlayerStreamTypes.h"
 
 #include <memory>
 
@@ -31,19 +32,32 @@ namespace RETRO
 {
   class CRPProcessInfo;
 
-  class CRetroPlayerAudio : public GAME::IGameAudioCallback
+  struct AudioStreamPacket : public StreamPacket
+  {
+    AudioStreamPacket(const uint8_t* data, size_t size) :
+      StreamPacket{StreamType::AUDIO},
+      data{data},
+      size{size}
+    {
+    }
+
+    const uint8_t* data;
+    size_t size;
+  };
+
+  class CRetroPlayerAudio : public IRetroPlayerStream
   {
   public:
     explicit CRetroPlayerAudio(CRPProcessInfo& processInfo);
     ~CRetroPlayerAudio() override;
 
-    // implementation of IGameAudioCallback
-    bool OpenPCMStream(AEDataFormat format, unsigned int samplerate, const CAEChannelInfo& channelLayout) override;
-    bool OpenEncodedStream(AVCodecID codec, unsigned int samplerate, const CAEChannelInfo& channelLayout) override;
-    void AddData(const uint8_t* data, size_t size) override;
-    void CloseStream() override;
-
+    bool OpenStream(PCMFormat format, double sampleRate, const AudioChannelMap& channelMap);
     void Enable(bool bEnabled) { m_bAudioEnabled = bEnabled; }
+
+    // implementation of IRetroPlayerStream
+    bool GetStreamBuffer(unsigned int width, unsigned int height, StreamBuffer& buffer) override { return false; }
+    void AddStreamData(const StreamPacket& packet) override;
+    void CloseStream() override;
 
   private:
     CRPProcessInfo& m_processInfo;

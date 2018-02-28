@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2016-2017 Team Kodi
+ *      Copyright (C) 2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -19,16 +19,39 @@
  */
 #pragma once
 
+struct game_stream_properties;
+
 namespace KODI
 {
+namespace RETRO
+{
+  class IStreamManager;
+}
+
 namespace GAME
 {
-  class IGameInputCallback
-  {
-  public:
-    virtual ~IGameInputCallback() = default;
 
-    virtual void PollInput() = 0;
-  };
-}
-}
+class CGameClient;
+class IGameClientStream;
+
+class CGameClientStreams
+{
+public:
+  CGameClientStreams(CGameClient &gameClient);
+
+  void Initialize(RETRO::IStreamManager& streamManager);
+  void Deinitialize();
+
+  IGameClientStream *OpenStream(const game_stream_properties &properties);
+  void CloseStream(IGameClientStream *stream);
+
+private:
+  // Construction parameters
+  CGameClient &m_gameClient;
+
+  // Initialization parameters
+  RETRO::IStreamManager* m_streamManager = nullptr;
+};
+
+} // namespace GAME
+} // namespace KODI

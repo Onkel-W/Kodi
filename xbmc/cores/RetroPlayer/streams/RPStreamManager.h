@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2012-2017 Team Kodi
+ *      Copyright (C) 2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -19,39 +19,35 @@
  */
 #pragma once
 
-#include "games/addons/GameClientCallbacks.h"
-
-class CPixelConverter;
+#include "IStreamManager.h"
 
 namespace KODI
 {
 namespace RETRO
 {
+  class CRetroPlayerAudio;
   class CRPProcessInfo;
   class CRPRenderManager;
 
-  /*!
-   * \brief Renders video frames provided by the game loop
-   *
-   * \sa CRPRenderManager
-   */
-  class CRetroPlayerVideo : public GAME::IGameVideoCallback
+  class CRPStreamManager : public IStreamManager
   {
   public:
-    CRetroPlayerVideo(CRPRenderManager& m_renderManager, CRPProcessInfo& m_processInfo);
+    CRPStreamManager(CRPRenderManager& renderManager, CRPProcessInfo& processInfo);
+    ~CRPStreamManager() override = default;
 
-    ~CRetroPlayerVideo() override;
+    void EnableAudio(bool bEnable);
 
-    // implementation of IGameVideoCallback
-    bool OpenPixelStream(AVPixelFormat pixfmt, unsigned int width, unsigned int height, unsigned int orientationDeg) override;
-    bool OpenEncodedStream(AVCodecID codec) override;
-    void AddData(const uint8_t* data, size_t size) override;
-    void CloseStream() override;
+    // Implementation of IStreamManager
+    StreamPtr OpenStream(StreamType streamType) override;
+    void CloseStream(StreamPtr stream) override;
 
   private:
     // Construction parameters
     CRPRenderManager& m_renderManager;
-    CRPProcessInfo&   m_processInfo;
+    CRPProcessInfo& m_processInfo;
+
+    // Stream parameters
+    CRetroPlayerAudio* m_audioStream = nullptr;
   };
 }
 }
