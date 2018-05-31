@@ -24,7 +24,7 @@
 #include <mach/mach_time.h>
 #include <CoreVideo/CVHostTime.h>
 #elif defined(TARGET_WINDOWS)
-#include <windows.h>
+#include "utils/TimeUtils.h"
 #else
 #include <time.h>
 #endif
@@ -40,7 +40,7 @@ namespace XbmcThreads
 #if defined(TARGET_DARWIN)
     now_time = CVGetCurrentHostTime() *  1000 / CVGetHostClockFrequency();
 #elif defined(TARGET_WINDOWS)
-    now_time = GetTickCount64();
+    now_time = static_cast<uint64_t>(1000 * CurrentHostCounter() / CurrentHostFrequency());
 #else
     struct timespec ts = {};
 #ifdef CLOCK_MONOTONIC_RAW
