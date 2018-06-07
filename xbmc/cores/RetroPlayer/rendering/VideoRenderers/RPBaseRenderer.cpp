@@ -158,13 +158,6 @@ void CRPBaseRenderer::SetSpeed(double speed)
     m_shaderPreset->SetSpeed(speed);
 }
 
-void CRPBaseRenderer::GetVideoRect(CRect &source, CRect &dest, CRect &view) const
-{
-  source = m_sourceRect;
-  dest = m_renderSettings.Geometry().Dimensions();
-  view = m_viewRect;
-}
-
 float CRPBaseRenderer::GetAspectRatio() const
 {
   return m_sourceFrameRatio;

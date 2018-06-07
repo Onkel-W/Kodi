@@ -96,14 +96,6 @@ namespace RETRO
      */
     virtual void ManageRenderArea();
 
-    /*!
-     * \brief Get video rectangle and view window
-     *
-     * \param source is original size of the video
-     * \param dest is the target rendering area honoring aspect ratio of source
-     * \param view is the entire target rendering area for the video (including black bars)
-     */
-    void GetVideoRect(CRect &source, CRect &dest, CRect &view) const;
     float GetAspectRatio() const;
 
     // Construction parameters
@@ -136,8 +128,8 @@ namespace RETRO
     // Geometry properties
     CPoint m_rotatedDestCoords[4];
     CRect m_oldDestRect; // destrect of the previous frame
-    CRect m_sourceRect;
-    CRect m_viewRect;
+    CRect m_sourceRect; // original size of the video
+    CRect m_viewRect; // entire target rendering area for the video (including black bars)
 
     // ====== Video Shader Members =====
     void UpdateVideoShaders();
