@@ -310,7 +310,7 @@ bool CGameClient::OpenStandalone(RETRO::IStreamManager& streamManager, IGameInpu
     return false;
   }
 
-  if (!InitializeGameplay(ID(), streamManager, input))
+  if (!InitializeGameplay("", streamManager, input))
     return false;
 
   return true;
