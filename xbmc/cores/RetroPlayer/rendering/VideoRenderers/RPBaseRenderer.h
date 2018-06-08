@@ -122,7 +122,6 @@ namespace RETRO
     CRenderSettings m_renderSettings;
     float m_pixelRatio = 1.0f;
     float m_zoomAmount = 1.0f;
-    bool m_bNonLinearStretch = false;
     IRenderBuffer *m_renderBuffer = nullptr;
 
     // Geometry properties
@@ -139,8 +138,6 @@ namespace RETRO
     bool m_bUseShaderPreset;
 
   private:
-    bool IsNonLinearStretch() const { return m_bNonLinearStretch; }
-
     /*!
      * \brief Performs whatever nessesary after a frame has been rendered
      */
