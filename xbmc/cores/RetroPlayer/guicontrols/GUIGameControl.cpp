@@ -61,6 +61,7 @@ CGUIGameControl::CGUIGameControl(const CGUIGameControl &other) :
   m_videoFilterInfo(other.m_videoFilterInfo),
   m_scalingMethodInfo(other.m_scalingMethodInfo),
   m_viewModeInfo(other.m_viewModeInfo),
+  m_bHasShaderPreset(other.m_bHasShaderPreset),
   m_bHasScalingMethod(other.m_bHasScalingMethod),
   m_bHasViewMode(other.m_bHasViewMode),
   m_renderSettings(new CGUIRenderSettings(*this))

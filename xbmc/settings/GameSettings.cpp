@@ -24,6 +24,7 @@ CGameSettings &CGameSettings::operator=(const CGameSettings &rhs)
 {
   if (this != &rhs)
   {
+    m_videoFilter = rhs.m_videoFilter;
     m_scalingMethod = rhs.m_scalingMethod;
     m_viewMode = rhs.m_viewMode;
   }
