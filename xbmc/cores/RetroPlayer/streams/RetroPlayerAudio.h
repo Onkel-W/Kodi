@@ -73,7 +73,10 @@ namespace RETRO
     void CloseStream() override;
 
   private:
+    // Construction parameters
     CRPProcessInfo& m_processInfo;
+
+    // Audio parameters
     IAEStream* m_pAudioStream;
     bool m_bAudioEnabled;
   };

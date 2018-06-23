@@ -22,37 +22,35 @@
 
 #include "IGameClientStream.h"
 
-struct game_stream_audio_properties;
+struct game_stream_memory_properties;
 
 namespace KODI
 {
 namespace RETRO
 {
   class IRetroPlayerStream;
-  struct AudioStreamProperties;
+  struct MemoryStreamProperties;
 }
 
 namespace GAME
 {
 
-class CGameClientStreamAudio : public IGameClientStream
+class CGameClientStreamMemory : public IGameClientStream
 {
 public:
-  CGameClientStreamAudio(double sampleRate);
-  ~CGameClientStreamAudio() override { CloseStream(); }
+  CGameClientStreamMemory() = default;
+  ~CGameClientStreamMemory() override { CloseStream(); }
 
   // Implementation of IGameClientStream
   bool OpenStream(RETRO::IRetroPlayerStream* stream,
                   const game_stream_properties& properties) override;
   void CloseStream() override;
-  void AddData(const game_stream_packet &packet) override;
+  bool GetBuffer(unsigned int width, unsigned int height, game_stream_buffer& buffer) override;
+  void AddData(const game_stream_packet& packet) override;
 
 private:
   // Utility functions
-  static RETRO::AudioStreamProperties* TranslateProperties(const game_stream_audio_properties &properties, double sampleRate);
-
-  // Construction parameters
-  const double m_sampleRate;
+  static RETRO::MemoryStreamProperties* TranslateProperties(const game_stream_memory_properties &properties);
 
   // Stream parameters
   RETRO::IRetroPlayerStream* m_stream = nullptr;
