@@ -114,10 +114,10 @@ cd $HOME/kodi-build
 
 Configure build:
 ```
-cmake ../kodi -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_INTERNAL_FSTRCMP=1
+cmake ../kodi -DCMAKE_INSTALL_PREFIX=/usr/local -DENABLE_INTERNAL_FSTRCMP=1 -DENABLE_INTERNAL_FLATBUFFERS=1
 ```
 
-Internal libfstrcmp is used since it is not available through pkg.
+Internal libfstrcmp and flatbuffers are used since they are not available through pkg.
 
 ### 4.2. Build
 ```
