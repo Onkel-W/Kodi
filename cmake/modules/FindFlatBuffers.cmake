@@ -26,7 +26,7 @@
 
 set(FLATBUFFERS_CMAKE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-find_program(FLATBUFFERS_FLATC_EXECUTABLE NAMES flatc)
+find_program(FLATBUFFERS_FLATC_EXECUTABLE NAMES flatc PATHS ${NATIVEPREFIX})
 find_path(FLATBUFFERS_INCLUDE_DIR NAMES flatbuffers/flatbuffers.h)
 
 include(FindPackageHandleStandardArgs)
