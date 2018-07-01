@@ -47,6 +47,8 @@ namespace RETRO
     bool Allocate(AVPixelFormat format, unsigned int width, unsigned int height) override;
     size_t GetFrameSize() const override;
     uint8_t *GetMemory() override;
+    DataAccess GetMemoryAccess() override { return DataAccess::WRITE_ONLY; }
+    DataAlignment GetMemoryAlignment() override { return DataAlignment::UNALIGNED; }
     void ReleaseMemory() override;
 
     // implementation of IRenderBuffer

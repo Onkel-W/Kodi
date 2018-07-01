@@ -43,6 +43,7 @@ namespace RETRO
     bool Allocate(AVPixelFormat format, unsigned int width, unsigned int height) override;
     size_t GetFrameSize() const override;
     uint8_t *GetMemory() override;
+    DataAccess GetMemoryAccess() override { return DataAccess::READ_WRITE; }
 
     // Utility functions
     static size_t GetBufferSize(AVPixelFormat format, unsigned int width, unsigned int height);
