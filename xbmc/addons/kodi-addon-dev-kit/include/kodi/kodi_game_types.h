@@ -295,6 +295,141 @@ typedef struct game_stream_memory_packet
 } ATTRIBUTE_PACKED game_stream_memory_packet;
 ///}
 
+/// @name Input stream
+///{
+typedef enum GAME_FEATURE_TYPE
+{
+  GAME_FEATURE_DIGITAL_BUTTON,
+  GAME_FEATURE_ANALOG_BUTTON,
+  GAME_FEATURE_AXIS,
+  GAME_FEATURE_ANALOG_STICK,
+  GAME_FEATURE_ACCELEROMETER,
+  GAME_FEATURE_KEY,
+  GAME_FEATURE_RELATIVE_POINTER,
+  GAME_FEATURE_ABSOLUTE_POINTER,
+  GAME_FEATURE_MOTOR
+} GAME_FEATURE_TYPE;
+
+typedef struct game_digital_button_state
+{
+  bool pressed;
+} ATTRIBUTE_PACKED game_digital_button_state;
+
+typedef struct game_analog_button_state
+{
+  float magnitude;
+} ATTRIBUTE_PACKED game_analog_button_state;
+
+typedef struct game_axis_state
+{
+  float position;
+} ATTRIBUTE_PACKED game_axis_state;
+
+typedef struct game_analog_stick_state
+{
+  float x;
+  float y;
+} ATTRIBUTE_PACKED game_analog_stick_state;
+
+typedef struct game_accelerometer_state
+{
+  float x;
+  float y;
+  float z;
+} ATTRIBUTE_PACKED game_accelerometer_state;
+
+typedef enum GAME_KEY_MOD
+{
+  GAME_KEY_MOD_NONE = 0x0000,
+
+  GAME_KEY_MOD_SHIFT = 0x0001,
+  GAME_KEY_MOD_CTRL = 0x0002,
+  GAME_KEY_MOD_ALT = 0x0004,
+  GAME_KEY_MOD_META = 0x0008,
+  GAME_KEY_MOD_SUPER = 0x0010,
+
+  GAME_KEY_MOD_NUMLOCK = 0x0100,
+  GAME_KEY_MOD_CAPSLOCK = 0x0200,
+  GAME_KEY_MOD_SCROLLOCK = 0x0400,
+} GAME_KEY_MOD;
+
+typedef struct game_key_state
+{
+  bool pressed;
+
+  /*!
+   * If the keypress generates a printing character, the unicode value
+   * contains the character generated. If the key is a non-printing character,
+   * e.g. a function or arrow key, the unicode value is zero.
+   */
+  uint32_t unicode;
+
+  GAME_KEY_MOD modifiers;
+} ATTRIBUTE_PACKED game_key_state;
+
+typedef struct game_rel_pointer_state
+{
+  int          x;
+  int          y;
+} ATTRIBUTE_PACKED game_rel_pointer_state;
+
+typedef struct game_abs_pointer_state
+{
+  bool         pressed;
+  float        x;
+  float        y;
+} ATTRIBUTE_PACKED game_abs_pointer_state;
+
+typedef struct game_motor_state
+{
+  float        magnitude;
+} ATTRIBUTE_PACKED game_motor_state;
+
+typedef struct game_input_feature
+{
+  const char* name;
+  GAME_FEATURE_TYPE type;
+  union
+  {
+    struct game_digital_button_state digital_button;
+    struct game_analog_button_state  analog_button;
+    struct game_axis_state           axis;
+    struct game_analog_stick_state   analog_stick;
+    struct game_accelerometer_state  accelerometer;
+    struct game_key_state            key;
+    struct game_rel_pointer_state    rel_pointer;
+    struct game_abs_pointer_state    abs_pointer;
+    struct game_motor_state          motor;
+  };
+} ATTRIBUTE_PACKED game_input_feature;
+
+/*!
+ * \brief Type of port on the virtual game console
+ */
+typedef enum GAME_PORT_TYPE
+{
+  GAME_PORT_UNKNOWN,
+  GAME_PORT_KEYBOARD,
+  GAME_PORT_MOUSE,
+  GAME_PORT_CONTROLLER,
+} GAME_PORT_TYPE;
+
+typedef struct game_stream_input_controller
+{
+  const char *controller_id;
+  GAME_PORT_TYPE port_type;
+  const char *port_address;
+  game_input_feature *features;
+  unsigned int feature_count;
+} ATTRIBUTE_PACKED game_stream_input_controller;
+
+typedef struct game_stream_input_packet
+{
+  const game_stream_input_controller *controlers;
+  unsigned int controller_count;
+} ATTRIBUTE_PACKED game_stream_input_packet;
+///}
+
 /// @name Stream types
 ///{
 typedef enum GAME_STREAM_TYPE
@@ -305,6 +440,7 @@ typedef enum GAME_STREAM_TYPE
   GAME_STREAM_HW_FRAMEBUFFER,
   GAME_STREAM_SW_FRAMEBUFFER,
   GAME_STREAM_MEMORY,
+  GAME_STREAM_INPUT,
 } GAME_STREAM_TYPE;
 
 /*!
@@ -357,6 +493,7 @@ typedef struct game_stream_packet
     game_stream_hw_framebuffer_packet hw_framebuffer;
     game_stream_sw_framebuffer_packet sw_framebuffer;
     game_stream_memory_packet memory;
+    game_stream_input_packet input;
   };
 } ATTRIBUTE_PACKED game_stream_packet;
 ///}
@@ -442,46 +579,7 @@ typedef enum GAME_SIMD
 
 /// @name Input types
 ///{
-
-typedef enum GAME_INPUT_EVENT_SOURCE
-{
-  GAME_INPUT_EVENT_DIGITAL_BUTTON,
-  GAME_INPUT_EVENT_ANALOG_BUTTON,
-  GAME_INPUT_EVENT_AXIS,
-  GAME_INPUT_EVENT_ANALOG_STICK,
-  GAME_INPUT_EVENT_ACCELEROMETER,
-  GAME_INPUT_EVENT_KEY,
-  GAME_INPUT_EVENT_RELATIVE_POINTER,
-  GAME_INPUT_EVENT_ABSOLUTE_POINTER,
-  GAME_INPUT_EVENT_MOTOR,
-} GAME_INPUT_EVENT_SOURCE;
-
-typedef enum GAME_KEY_MOD
-{
-  GAME_KEY_MOD_NONE = 0x0000,
-
-  GAME_KEY_MOD_SHIFT = 0x0001,
-  GAME_KEY_MOD_CTRL = 0x0002,
-  GAME_KEY_MOD_ALT = 0x0004,
-  GAME_KEY_MOD_META = 0x0008,
-  GAME_KEY_MOD_SUPER = 0x0010,
-
-  GAME_KEY_MOD_NUMLOCK = 0x0100,
-  GAME_KEY_MOD_CAPSLOCK = 0x0200,
-  GAME_KEY_MOD_SCROLLOCK = 0x0400,
-} GAME_KEY_MOD;
-
-/*!
- * \brief Type of port on the virtual game console
- */
-typedef enum GAME_PORT_TYPE
-{
-  GAME_PORT_UNKNOWN,
-  GAME_PORT_KEYBOARD,
-  GAME_PORT_MOUSE,
-  GAME_PORT_CONTROLLER,
-} GAME_PORT_TYPE;
-
+  
 typedef struct game_controller_layout
 {
   char*        controller_id;
@@ -546,85 +644,12 @@ typedef struct game_input_topology
   int player_limit; //! A limit on the number of input-providing devices, or -1 for no limit
 } ATTRIBUTE_PACKED game_input_topology;
 
-typedef struct game_digital_button_event
-{
-  bool         pressed;
-} ATTRIBUTE_PACKED game_digital_button_event;
-
-typedef struct game_analog_button_event
-{
-  float        magnitude;
-} ATTRIBUTE_PACKED game_analog_button_event;
-
-typedef struct game_axis_event
-{
-  float        position;
-} ATTRIBUTE_PACKED game_axis_event;
-
-typedef struct game_analog_stick_event
-{
-  float        x;
-  float        y;
-} ATTRIBUTE_PACKED game_analog_stick_event;
-
-typedef struct game_accelerometer_event
-{
-  float        x;
-  float        y;
-  float        z;
-} ATTRIBUTE_PACKED game_accelerometer_event;
-
-typedef struct game_key_event
-{
-  bool         pressed;
-
-  /*!
-   * If the keypress generates a printing character, the unicode value
-   * contains the character generated. If the key is a non-printing character,
-   * e.g. a function or arrow key, the unicode value is zero.
-   */
-  uint32_t unicode;
-
-  GAME_KEY_MOD modifiers;
-} ATTRIBUTE_PACKED game_key_event;
-
-typedef struct game_rel_pointer_event
-{
-  int          x;
-  int          y;
-} ATTRIBUTE_PACKED game_rel_pointer_event;
-
-typedef struct game_abs_pointer_event
-{
-  bool         pressed;
-  float        x;
-  float        y;
-} ATTRIBUTE_PACKED game_abs_pointer_event;
-
-typedef struct game_motor_event
-{
-  float        magnitude;
-} ATTRIBUTE_PACKED game_motor_event;
-
 typedef struct game_input_event
 {
-  GAME_INPUT_EVENT_SOURCE type;
   const char*             controller_id;
   GAME_PORT_TYPE          port_type;
   const char*             port_address;
-  const char*             feature_name;
-  union
-  {
-    struct game_digital_button_event digital_button;
-    struct game_analog_button_event  analog_button;
-    struct game_axis_event           axis;
-    struct game_analog_stick_event   analog_stick;
-    struct game_accelerometer_event  accelerometer;
-    struct game_key_event            key;
-    struct game_rel_pointer_event    rel_pointer;
-    struct game_abs_pointer_event    abs_pointer;
-    struct game_motor_event          motor;
-  };
+  game_input_feature      feature;
 } ATTRIBUTE_PACKED game_input_event;
 ///}
 

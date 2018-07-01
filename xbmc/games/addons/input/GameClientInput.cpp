@@ -484,11 +484,11 @@ bool CGameClientInput::ReceiveInputEvent(const game_input_event& event)
 {
   bool bHandled = false;
 
-  switch (event.type)
+  switch (event.feature.type)
   {
-    case GAME_INPUT_EVENT_MOTOR:
-      if (event.port_address != nullptr && event.feature_name != nullptr)
-        bHandled = SetRumble(event.port_address, event.feature_name, event.motor.magnitude);
+    case GAME_FEATURE_MOTOR:
+      if (event.port_address != nullptr && event.feature.name != nullptr)
+        bHandled = SetRumble(event.port_address, event.feature.name, event.feature.motor.magnitude);
       break;
     default:
       break;

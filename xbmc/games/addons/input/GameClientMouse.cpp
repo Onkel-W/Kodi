@@ -65,13 +65,13 @@ bool CGameClientMouse::OnMotion(const std::string& relpointer, int dx, int dy)
 
   game_input_event event;
 
-  event.type            = GAME_INPUT_EVENT_RELATIVE_POINTER;
-  event.controller_id   = m_controllerId.c_str();
-  event.port_type       = GAME_PORT_MOUSE;
-  event.port_address    = ""; // Not used
-  event.feature_name    = relpointer.c_str();
-  event.rel_pointer.x   = dx;
-  event.rel_pointer.y   = dy;
+  event.controller_id = m_controllerId.c_str();
+  event.port_type = GAME_PORT_MOUSE;
+  event.port_address = ""; // Not used
+  event.feature.name = relpointer.c_str();
+  event.feature.type = GAME_FEATURE_RELATIVE_POINTER;
+  event.feature.rel_pointer.x = dx;
+  event.feature.rel_pointer.y = dy;
 
 
   return m_gameClient.Input().InputEvent(event);
@@ -87,12 +87,12 @@ bool CGameClientMouse::OnButtonPress(const std::string& button)
 
   game_input_event event;
 
-  event.type                   = GAME_INPUT_EVENT_DIGITAL_BUTTON;
-  event.controller_id          = m_controllerId.c_str();
-  event.port_type              = GAME_PORT_MOUSE;
-  event.port_address           = ""; // Not used
-  event.feature_name           = button.c_str();
-  event.digital_button.pressed = true;
+  event.controller_id = m_controllerId.c_str();
+  event.port_type = GAME_PORT_MOUSE;
+  event.port_address = ""; // Not used
+  event.feature.name = button.c_str();
+  event.feature.type = GAME_FEATURE_DIGITAL_BUTTON;
+  event.feature.digital_button.pressed = true;
 
 
   return m_gameClient.Input().InputEvent(event);
@@ -102,12 +102,12 @@ void CGameClientMouse::OnButtonRelease(const std::string& button)
 {
   game_input_event event;
 
-  event.type                   = GAME_INPUT_EVENT_DIGITAL_BUTTON;
-  event.controller_id          = m_controllerId.c_str();
-  event.port_type              = GAME_PORT_MOUSE;
-  event.port_address           = ""; // Not used
-  event.feature_name           = button.c_str();
-  event.digital_button.pressed = false;
+  event.controller_id = m_controllerId.c_str();
+  event.port_type = GAME_PORT_MOUSE;
+  event.port_address = ""; // Not used
+  event.feature.name = button.c_str();
+  event.feature.type = GAME_FEATURE_DIGITAL_BUTTON;
+  event.feature.digital_button.pressed = false;
 
 
   m_gameClient.Input().InputEvent(event);

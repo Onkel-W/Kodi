@@ -86,12 +86,12 @@ bool CGameClientJoystick::OnButtonPress(const std::string& feature, bool bPresse
 
   std::string controllerId = m_controller->ID();
 
-  event.type                   = GAME_INPUT_EVENT_DIGITAL_BUTTON;
-  event.controller_id          = controllerId.c_str();
-  event.port_type              = GAME_PORT_CONTROLLER;
-  event.port_address           = m_portAddress.c_str();
-  event.feature_name           = feature.c_str();
-  event.digital_button.pressed = bPressed;
+  event.controller_id = controllerId.c_str();
+  event.port_type = GAME_PORT_CONTROLLER;
+  event.port_address = m_portAddress.c_str();
+  event.feature.name = feature.c_str();
+  event.feature.type = GAME_FEATURE_DIGITAL_BUTTON;
+  event.feature.digital_button.pressed = bPressed;
 
   return m_gameClient.Input().InputEvent(event);
 }
@@ -102,12 +102,12 @@ bool CGameClientJoystick::OnButtonMotion(const std::string& feature, float magni
 
   std::string controllerId = m_controller->ID();
 
-  event.type                    = GAME_INPUT_EVENT_ANALOG_BUTTON;
-  event.controller_id           = controllerId.c_str();
-  event.port_type               = GAME_PORT_CONTROLLER;
-  event.port_address            = m_portAddress.c_str();
-  event.feature_name            = feature.c_str();
-  event.analog_button.magnitude = magnitude;
+  event.controller_id = controllerId.c_str();
+  event.port_type = GAME_PORT_CONTROLLER;
+  event.port_address = m_portAddress.c_str();
+  event.feature.name = feature.c_str();
+  event.feature.type = GAME_FEATURE_ANALOG_BUTTON;
+  event.feature.analog_button.magnitude = magnitude;
 
 
   return m_gameClient.Input().InputEvent(event);
@@ -119,13 +119,13 @@ bool CGameClientJoystick::OnAnalogStickMotion(const std::string& feature, float 
 
   std::string controllerId = m_controller->ID();
 
-  event.type           = GAME_INPUT_EVENT_ANALOG_STICK;
-  event.controller_id  = controllerId.c_str();
-  event.port_type      = GAME_PORT_CONTROLLER;
-  event.port_address   = m_portAddress.c_str();
-  event.feature_name   = feature.c_str();
-  event.analog_stick.x = x;
-  event.analog_stick.y = y;
+  event.controller_id = controllerId.c_str();
+  event.port_type = GAME_PORT_CONTROLLER;
+  event.port_address = m_portAddress.c_str();
+  event.feature.name = feature.c_str();
+  event.feature.type = GAME_FEATURE_ANALOG_STICK;
+  event.feature.analog_stick.x = x;
+  event.feature.analog_stick.y = y;
 
   return m_gameClient.Input().InputEvent(event);
 }
@@ -136,14 +136,14 @@ bool CGameClientJoystick::OnAccelerometerMotion(const std::string& feature, floa
 
   std::string controllerId = m_controller->ID();
 
-  event.type            = GAME_INPUT_EVENT_ACCELEROMETER;
-  event.controller_id   = controllerId.c_str();
-  event.port_type       = GAME_PORT_CONTROLLER;
-  event.port_address    = m_portAddress.c_str();
-  event.feature_name    = feature.c_str();
-  event.accelerometer.x = x;
-  event.accelerometer.y = y;
-  event.accelerometer.z = z;
+  event.controller_id = controllerId.c_str();
+  event.port_type = GAME_PORT_CONTROLLER;
+  event.port_address = m_portAddress.c_str();
+  event.feature.name = feature.c_str();
+  event.feature.type = GAME_FEATURE_ACCELEROMETER;
+  event.feature.accelerometer.x = x;
+  event.feature.accelerometer.y = y;
+  event.feature.accelerometer.z = z;
 
   return m_gameClient.Input().InputEvent(event);
 }
@@ -154,12 +154,12 @@ bool CGameClientJoystick::OnWheelMotion(const std::string& feature, float positi
 
   std::string controllerId = m_controller->ID();
 
-  event.type                    = GAME_INPUT_EVENT_AXIS;
-  event.controller_id           = controllerId.c_str();
-  event.port_type               = GAME_PORT_CONTROLLER;
-  event.port_address            = m_portAddress.c_str();
-  event.feature_name            = feature.c_str();
-  event.axis.position           = position;
+  event.controller_id = controllerId.c_str();
+  event.port_type = GAME_PORT_CONTROLLER;
+  event.port_address = m_portAddress.c_str();
+  event.feature.name = feature.c_str();
+  event.feature.type = GAME_FEATURE_AXIS;
+  event.feature.axis.position = position;
 
   return m_gameClient.Input().InputEvent(event);
 }
@@ -170,12 +170,12 @@ bool CGameClientJoystick::OnThrottleMotion(const std::string& feature, float pos
 
   std::string controllerId = m_controller->ID();
 
-  event.type                    = GAME_INPUT_EVENT_AXIS;
-  event.controller_id           = controllerId.c_str();
-  event.port_type               = GAME_PORT_CONTROLLER;
-  event.port_address            = m_portAddress.c_str();
-  event.feature_name            = feature.c_str();
-  event.axis.position           = position;
+  event.controller_id = controllerId.c_str();
+  event.port_type = GAME_PORT_CONTROLLER;
+  event.port_address = m_portAddress.c_str();
+  event.feature.name = feature.c_str();
+  event.feature.type = GAME_FEATURE_AXIS;
+  event.feature.axis.position = position;
 
   return m_gameClient.Input().InputEvent(event);
 }

@@ -81,14 +81,14 @@ bool CGameClientKeyboard::OnKeyPress(const KEYBOARD::KeyName &key, KEYBOARD::Mod
 
   game_input_event event;
 
-  event.type            = GAME_INPUT_EVENT_KEY;
   event.controller_id   = m_controllerId.c_str();
-  event.port_type       = GAME_PORT_KEYBOARD;
-  event.port_address    = ""; // Not used
-  event.feature_name    = key.c_str();
-  event.key.pressed     = true;
-  event.key.unicode     = unicode;
-  event.key.modifiers   = CGameClientTranslator::GetModifiers(mod);
+  event.port_type = GAME_PORT_KEYBOARD;
+  event.port_address = ""; // Not used
+  event.feature.name = key.c_str();
+  event.feature.type = GAME_FEATURE_KEY;
+  event.feature.key.pressed = true;
+  event.feature.key.unicode = unicode;
+  event.feature.key.modifiers = CGameClientTranslator::GetModifiers(mod);
 
   return m_gameClient.Input().InputEvent(event);
 }
@@ -97,14 +97,14 @@ void CGameClientKeyboard::OnKeyRelease(const KEYBOARD::KeyName &key, KEYBOARD::M
 {
   game_input_event event;
 
-  event.type            = GAME_INPUT_EVENT_KEY;
-  event.controller_id   = m_controllerId.c_str();
-  event.port_type       = GAME_PORT_KEYBOARD;
-  event.port_address    = ""; // Not used
-  event.feature_name    = key.c_str();
-  event.key.pressed     = false;
-  event.key.unicode     = unicode;
-  event.key.modifiers   = CGameClientTranslator::GetModifiers(mod);
+  event.controller_id = m_controllerId.c_str();
+  event.port_type = GAME_PORT_KEYBOARD;
+  event.port_address = ""; // Not used
+  event.feature.name = key.c_str();
+  event.feature.type = GAME_FEATURE_KEY;
+  event.feature.key.pressed = false;
+  event.feature.key.unicode = unicode;
+  event.feature.key.modifiers = CGameClientTranslator::GetModifiers(mod);
 
   m_gameClient.Input().InputEvent(event);
 }
