@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2012-2017 Team Kodi
+ *      Copyright (C) 2017 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -21,63 +21,40 @@
 #pragma once
 
 #include "IRetroPlayerStream.h"
+#include "games/addons/GameClientCallbacks.h"
+#include "peripherals/PeripheralTypes.h"
 
-#include <memory>
-
-class IAEStream;
+namespace PERIPHERALS
+{
+  class CPeripherals;
+}
 
 namespace KODI
 {
 namespace RETRO
 {
-  class CRPProcessInfo;
-
-  struct AudioStreamProperties : public StreamProperties
-  {
-    AudioStreamProperties(PCMFormat format, double sampleRate, AudioChannelMap channelMap) :
-      format(format),
-      sampleRate(sampleRate),
-      channelMap(channelMap)
-    {
-    }
-
-    PCMFormat format;
-    double sampleRate;
-    AudioChannelMap channelMap;
-  };
-
-  struct AudioStreamPacket : public StreamPacket
-  {
-    AudioStreamPacket(const uint8_t* data, size_t size) :
-      data(data),
-      size(size)
-    {
-    }
-
-    const uint8_t* data;
-    size_t size;
-  };
-
-  class CRetroPlayerAudio : public IRetroPlayerStream
+  class CRetroPlayerInput : public IRetroPlayerStream,
+                            public GAME::IGameInputCallback
   {
   public:
-    explicit CRetroPlayerAudio(CRPProcessInfo& processInfo);
-    ~CRetroPlayerAudio() override;
+    CRetroPlayerInput();
+    ~CRetroPlayerInput() override;
 
-    // implementation of IRetroPlayerStream
+    // Implementation of IRetroPlayerStream
     bool OpenStream(const StreamProperties& properties) override;
     bool GetStreamBuffer(unsigned int width, unsigned int height, StreamBuffer& buffer) override { return false; }
     void AddStreamData(const StreamPacket& packet) override;
     void CloseStream() override;
     void SetSpeed(double speed) override;
 
-  private:
-    // Construction parameters
-    CRPProcessInfo& m_processInfo;
+    // implementation of IGameInputCallback
+    void PollInput() override;
 
-    // Audio parameters
-    IAEStream* m_pAudioStream;
-    bool m_bAudioEnabled;
+  private:
+    PERIPHERALS::CPeripherals &m_peripheralManager;
+
+    // Input variables
+    PERIPHERALS::EventPollHandlePtr m_inputPollHandle;
   };
 }
 }

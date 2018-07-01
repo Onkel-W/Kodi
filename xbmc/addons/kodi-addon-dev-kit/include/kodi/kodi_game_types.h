@@ -440,7 +440,6 @@ typedef enum GAME_STREAM_TYPE
   GAME_STREAM_HW_FRAMEBUFFER,
   GAME_STREAM_SW_FRAMEBUFFER,
   GAME_STREAM_MEMORY,
-  GAME_STREAM_INPUT,
 } GAME_STREAM_TYPE;
 
 /*!
@@ -493,7 +492,6 @@ typedef struct game_stream_packet
     game_stream_hw_framebuffer_packet hw_framebuffer;
     game_stream_sw_framebuffer_packet sw_framebuffer;
     game_stream_memory_packet memory;
-    game_stream_input_packet input;
   };
 } ATTRIBUTE_PACKED game_stream_packet;
 ///}

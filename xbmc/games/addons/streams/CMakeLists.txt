@@ -1,4 +1,5 @@
 set(SOURCES GameClientStreamAudio.cpp
+            GameClientStreamInput.cpp
             GameClientStreamMemory.cpp
             GameClientStreams.cpp
             GameClientStreamSwFramebuffer.cpp
@@ -6,6 +7,7 @@ set(SOURCES GameClientStreamAudio.cpp
 )
 
 set(HEADERS GameClientStreamAudio.h
+            GameClientStreamInput.h
             GameClientStreamMemory.h
             GameClientStreams.h
             GameClientStreamSwFramebuffer.h

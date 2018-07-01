@@ -73,6 +73,11 @@ public:
    * \brief Close the stream
    */
   virtual void CloseStream() = 0;
+
+  /*!
+   * \brief Notify the stream of a speed change
+   */
+  virtual void SetSpeed(double speed) { }
 };
 
 }
