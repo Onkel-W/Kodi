@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2017 Team Kodi
+ *      Copyright (C) 2018 Team Kodi
  *      http://kodi.tv
  *
  *  This Program is free software; you can redistribute it and/or modify
@@ -20,35 +20,37 @@
 
 #pragma once
 
-#include "games/addons/GameClientCallbacks.h"
-#include "peripherals/PeripheralTypes.h"
+#include "IGameClientStream.h"
 
-namespace PERIPHERALS
-{
-  class CPeripherals;
-}
+struct game_stream_input_properties;
 
 namespace KODI
 {
 namespace RETRO
 {
-  class CRetroPlayerInput : public GAME::IGameInputCallback
-  {
-  public:
-    CRetroPlayerInput(PERIPHERALS::CPeripherals &peripheralManager);
-    ~CRetroPlayerInput() override;
-
-    void SetSpeed(double speed);
-
-    // implementation of IGameAudioCallback
-    void PollInput() override;
-
-  private:
-    // Construction parameters
-    PERIPHERALS::CPeripherals &m_peripheralManager;
-
-    // Input variables
-    PERIPHERALS::EventPollHandlePtr m_inputPollHandle;
-  };
+  class IRetroPlayerStream;
+  struct InputStreamProperties;
 }
-}
+
+namespace GAME
+{
+
+class CGameClientStreamInput : public IGameClientStream
+{
+public:
+  CGameClientStreamInput() = default;
+  ~CGameClientStreamInput() override { CloseStream(); }
+
+  // Implementation of IGameClientStream
+  bool OpenStream(RETRO::IRetroPlayerStream* stream,
+                  const game_stream_properties& properties) override;
+  void CloseStream() override;
+  void AddData(const game_stream_packet& packet) override;
+
+private:
+  // Stream parameters
+  RETRO::IRetroPlayerStream* m_stream = nullptr;
+};
+
+} // namespace GAME
+} // namespace KODI

@@ -151,3 +151,11 @@ void CRetroPlayerAudio::CloseStream()
     m_pAudioStream = nullptr;
   }
 }
+
+void CRetroPlayerAudio::SetSpeed(double speed)
+{
+  if (speed == 1.0)
+    m_bAudioEnabled = true;
+  else
+    m_bAudioEnabled = false;
+}

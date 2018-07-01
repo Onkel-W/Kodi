@@ -22,6 +22,7 @@
 #include "IRetroPlayerStream.h"
 #include "RetroPlayerAudio.h"
 //#include "RetroPlayerHardwareBuffer.h" //! @todo
+#include "RetroPlayerInput.h"
 //#include "RetroPlayerSoftwareBuffer.h" //! @todo
 #include "RetroPlayerVideo.h"
 
@@ -34,45 +35,67 @@ CRPStreamManager::CRPStreamManager(CRPRenderManager& renderManager, CRPProcessIn
 {
 }
 
+CRPStreamManager::~CRPStreamManager()
+{
+  for (const StreamPtr &stream : m_streams)
+    stream->CloseStream();
+}
+
 void CRPStreamManager::EnableAudio(bool bEnable)
 {
-  if (m_audioStream != nullptr)
-    m_audioStream->Enable(bEnable);
+  //! @todo
+}
+
+void CRPStreamManager::SetSpeed(double speed)
+{
+  for (const StreamPtr &stream : m_streams)
+    stream->SetSpeed(speed);
 }
 
 StreamPtr CRPStreamManager::CreateStream(StreamType streamType)
 {
+  StreamPtr stream;
+
   switch (streamType)
   {
   case StreamType::AUDIO:
   {
-    // Save pointer to audio stream
-    m_audioStream = new CRetroPlayerAudio(m_processInfo);
-
-    return StreamPtr(m_audioStream);
+    stream.reset(new CRetroPlayerAudio(m_processInfo));
+    break;
   }
   case StreamType::VIDEO:
   case StreamType::SW_BUFFER:
   {
-    return StreamPtr(new CRetroPlayerVideo(m_renderManager, m_processInfo));
+    stream.reset(new CRetroPlayerVideo(m_renderManager, m_processInfo));
+    break;
   }
   case StreamType::HW_BUFFER:
   {
-    //return StreamPtr(new CRetroPlayerHardware(m_renderManager, m_processInfo)); //! @todo
+    //stream.reset(new CRetroPlayerHardware(m_renderManager, m_processInfo)); //! @todo
+    break;
+  }
+  case StreamType::INPUT:
+  {
+    stream.reset(new CRetroPlayerInput);
+    break;
   }
   default:
     break;
   }
 
-  return StreamPtr();
+  if (stream)
+    m_streams.push_back(stream);
+
+  return stream;
 }
 
 void CRPStreamManager::CloseStream(StreamPtr stream)
 {
   if (stream)
   {
-    if (stream.get() == m_audioStream)
-      m_audioStream = nullptr;
+    auto it = std::find(m_streams.begin(), m_streams.end(), stream);
+    if (it != m_streams.end())
+      m_streams.erase(it);
 
     stream->CloseStream();
   }

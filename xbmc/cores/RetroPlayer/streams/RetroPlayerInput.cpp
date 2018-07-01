@@ -22,28 +22,44 @@
 #include "peripherals/EventPollHandle.h"
 #include "peripherals/Peripherals.h"
 #include "utils/log.h"
+#include "ServiceBroker.h"
 
 using namespace KODI;
 using namespace RETRO;
 
-CRetroPlayerInput::CRetroPlayerInput(PERIPHERALS::CPeripherals &peripheralManager) :
-  m_peripheralManager(peripheralManager)
+CRetroPlayerInput::CRetroPlayerInput() :
+  m_peripheralManager(CServiceBroker::GetPeripherals())
 {
   CLog::Log(LOGDEBUG, "RetroPlayer[INPUT]: Initializing input");
 
-  m_inputPollHandle = m_peripheralManager.RegisterEventPoller();
 }
 
 CRetroPlayerInput::~CRetroPlayerInput()
 {
   CLog::Log(LOGDEBUG, "RetroPlayer[INPUT]: Deinitializing input");
+}
 
+bool CRetroPlayerInput::OpenStream(const StreamProperties& properties)
+{
+  CLog::Log(LOGDEBUG, "RetroPlayer[INPUT]: Acquiring input handle");
+  m_inputPollHandle = m_peripheralManager.RegisterEventPoller();
+  return true;
+}
+
+void CRetroPlayerInput::AddStreamData(const StreamPacket& packet)
+{
+  //! @todo
+}
+
+void CRetroPlayerInput::CloseStream()
+{
+  CLog::Log(LOGDEBUG, "RetroPlayer[INPUT]: Releasing input handle");
   m_inputPollHandle.reset();
 }
 
 void CRetroPlayerInput::SetSpeed(double speed)
 {
-  if (speed != 0)
+  if (speed != 0.0)
     m_inputPollHandle->Activate();
   else
     m_inputPollHandle->Deactivate();

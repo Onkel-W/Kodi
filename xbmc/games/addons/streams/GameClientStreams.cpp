@@ -20,6 +20,7 @@
 
 #include "GameClientStreams.h"
 #include "GameClientStreamAudio.h"
+#include "GameClientStreamInput.h"
 #include "GameClientStreamSwFramebuffer.h"
 #include "GameClientStreamVideo.h"
 #include "cores/RetroPlayer/streams/IRetroPlayerStream.h"
@@ -42,10 +43,14 @@ CGameClientStreams::CGameClientStreams(CGameClient &gameClient) :
 void CGameClientStreams::Initialize(RETRO::IStreamManager& streamManager)
 {
   m_streamManager = &streamManager;
+
+  //! @todo Open input stream
 }
 
 void CGameClientStreams::Deinitialize()
 {
+  //! @todo Close input stream
+
   m_streamManager = nullptr;
 }
 
