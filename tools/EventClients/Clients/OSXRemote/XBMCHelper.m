@@ -254,6 +254,8 @@
 		case kHIDRemoteButtonCodeMenuHold:
 			return (@"Menu (hold)");
       break;
+        default:
+      break;
 	}
 	return ([NSString stringWithFormat:@"Button %x", (int)buttonCode]);
 }
