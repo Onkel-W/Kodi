@@ -25,7 +25,7 @@ ifeq ($(OS),osx)
 CONFIGURE_FLAGS=--with-pic
 endif
 ifeq ($(OS), android)
-CONFIGURE_FLAGS=--with-pic
+CONFIGURE_FLAGS=--with-pic --disable-assembly
 endif
 ifeq ($(NATIVE_OS), osx)
 CONFIGURE_FLAGS+= CC_FOR_BUILD="$(CC_FOR_BUILD)" CPP_FOR_BUILD="$(CC_FOR_BUILD) -E"
