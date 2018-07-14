@@ -24,16 +24,6 @@ include "action_keyboard.fbs";
 
 namespace KODI.RETRO;
 
-/// @brief The state of all digital buttons represented as a bitmask for
-/// packing efficiency. Set bits represent pressed buttons. LSB is the first
-/// button. Bits exceeding the button count must be zero.
-table DigitalButtonState {
-  /// @brief The number of bits used in this mask
-  button_count:uint8;
-  /// @brief The bit mask of pressed buttons
-  bitmask:[uint8];
-}
-
 /// @brief The state of an analog button
 struct AnalogButtonState {
   /// @brief The state of the analog button
@@ -133,12 +123,21 @@ struct ThrottleState {
 
 /// @brief The state of a player's input device
 table ControllerState {
-  digital_buttons:DigitalButtonState;
+  /// @brief Bit mask of buttons, for packing efficiency. 1 for pressed, 0 for
+  /// unpressed. LSB is the first button.
+  digital_buttons:[uint8];
+  /// @brief The state of all analog buttons
   analog_buttons:[AnalogButtonState];
+  /// @brief The state of all analog sticks
   analog_sticks:[AnalogStickState];
+  /// @brief The state of all relative pointers
   relative_pointers:[RelativePointerState];
+  /// @bbrief The state of all absolute pointers
   absolute_pointers:[AbsolutePointerState];
+  /// @brief The state of all wheels
   wheels:[WheelState];
+  /// @brief The state of all throttles
   throttles:[ThrottleState];
+  /// @brief The keys that are pressed
   pressed_keys:[KeyboardPress];
 }
