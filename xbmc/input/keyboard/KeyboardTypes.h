@@ -21,6 +21,7 @@
 #pragma once
 
 #include "input/Key.h"
+#include "input/XBMC_keysym.h"
 
 #include <string>
 
@@ -29,13 +30,23 @@ namespace KODI
 namespace KEYBOARD
 {
   /*!
+   * \brief Symbol of a hardware-independent key
+   */
+  using KeySymbol = XBMCKey;
+
+  /*!
    * \brief Name of a hardware-indendent symbol representing a key
    *
    * Names are defined in the keyboard's controller profile.
    */
   using KeyName = std::string;
 
-  //! @todo Move CKey enum to this file
+  /*!
+   * \brief Modifier keys on a keyboard that can be held when
+   *        sending a key press
+   *
+   * \todo Move CKey enum to this file
+   */
   using Modifier = CKey::Modifier;
 }
 }
