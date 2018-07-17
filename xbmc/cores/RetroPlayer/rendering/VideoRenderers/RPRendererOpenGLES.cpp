@@ -246,7 +246,6 @@ void CRPRendererOpenGLES::RenderInternal(bool clear, uint8_t alpha)
   Render(alpha);
 
   glEnable(GL_BLEND);
-  glFlush();
 }
 
 void CRPRendererOpenGLES::FlushInternal()
