@@ -21,27 +21,22 @@
 #pragma once
 
 #include "IStreamManager.h"
-#include "RetroPlayerStreamTypes.h"
-
-#include <vector>
 
 namespace KODI
 {
 namespace RETRO
-  {
+{
+  class CRetroPlayerAudio;
   class CRPProcessInfo;
   class CRPRenderManager;
-  class IRetroPlayerStream;
 
   class CRPStreamManager : public IStreamManager
   {
   public:
     CRPStreamManager(CRPRenderManager& renderManager, CRPProcessInfo& processInfo);
-    ~CRPStreamManager() override;
+    ~CRPStreamManager() override = default;
 
-    // Functions called from the player
     void EnableAudio(bool bEnable);
-    void SetSpeed(double speed);
 
     // Implementation of IStreamManager
     StreamPtr CreateStream(StreamType streamType) override;
@@ -53,7 +48,7 @@ namespace RETRO
     CRPProcessInfo& m_processInfo;
 
     // Stream parameters
-    std::vector<StreamPtr> m_streams;
+    CRetroPlayerAudio* m_audioStream = nullptr;
   };
 }
 }

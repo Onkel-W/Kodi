@@ -22,7 +22,6 @@
 #include "IRetroPlayerStream.h"
 #include "RetroPlayerAudio.h"
 //#include "RetroPlayerHardwareBuffer.h" //! @todo
-#include "RetroPlayerInput.h"
 #include "RetroPlayerMemory.h"
 //#include "RetroPlayerSoftwareBuffer.h" //! @todo
 #include "RetroPlayerVideo.h"
@@ -36,68 +35,49 @@ CRPStreamManager::CRPStreamManager(CRPRenderManager& renderManager, CRPProcessIn
 {
 }
 
-CRPStreamManager::~CRPStreamManager()
+void CRPStreamManager::EnableAudio(bool bEnable)
 {
-  for (const StreamPtr &stream : m_streams)
-    stream->CloseStream();
-}
-
-void CRPStreamManager::SetSpeed(double speed)
-{
-  for (const StreamPtr &stream : m_streams)
-    stream->SetSpeed(speed);
+  if (m_audioStream != nullptr)
+    m_audioStream->Enable(bEnable);
 }
 
 StreamPtr CRPStreamManager::CreateStream(StreamType streamType)
 {
-  StreamPtr stream;
-
   switch (streamType)
   {
   case StreamType::AUDIO:
   {
-    stream.reset(new CRetroPlayerAudio(m_processInfo));
-    break;
+    // Save pointer to audio stream
+    m_audioStream = new CRetroPlayerAudio(m_processInfo);
+
+    return StreamPtr(m_audioStream);
   }
   case StreamType::VIDEO:
   case StreamType::SW_BUFFER:
   {
-    stream.reset(new CRetroPlayerVideo(m_renderManager, m_processInfo));
-    break;
+    return StreamPtr(new CRetroPlayerVideo(m_renderManager, m_processInfo));
   }
   case StreamType::HW_BUFFER:
   {
-    //stream.reset(new CRetroPlayerHardware(m_renderManager, m_processInfo)); //! @todo
-    break;
+    //return StreamPtr(new CRetroPlayerHardware(m_renderManager, m_processInfo)); //! @todo
   }
   case StreamType::MEMORY:
   {
-    stream.reset(new CRetroPlayerMemory);
-    break;
+    return StreamPtr(new CRetroPlayerMemory);
   }
-  case StreamType::INPUT:
-  {
-    stream.reset(new CRetroPlayerInput);
-    break;
-  }
-
   default:
     break;
   }
 
-  if (stream)
-    m_streams.push_back(stream);
-
-  return stream;
+  return StreamPtr();
 }
 
 void CRPStreamManager::CloseStream(StreamPtr stream)
 {
   if (stream)
   {
-    auto it = std::find(m_streams.begin(), m_streams.end(), stream);
-    if (it != m_streams.end())
-      m_streams.erase(it);
+    if (stream.get() == m_audioStream)
+      m_audioStream = nullptr;
 
     stream->CloseStream();
   }
