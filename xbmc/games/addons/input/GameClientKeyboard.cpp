@@ -34,7 +34,7 @@ using namespace GAME;
 
 #define BUTTON_INDEX_MASK  0x01ff
 
-CGameClientKeyboard::CGameClientKeyboard(const CGameClient &gameClient,
+CGameClientKeyboard::CGameClientKeyboard(CGameClient &gameClient,
                                          std::string controllerId,
                                          const KodiToAddonFuncTable_Game &dllStruct,
                                          KEYBOARD::IKeyboardInputProvider *inputProvider) :
@@ -79,8 +79,6 @@ bool CGameClientKeyboard::OnKeyPress(const KEYBOARD::KeyName &key, KEYBOARD::Mod
     return false;
   }
 
-  bool bHandled = false;
-
   game_input_event event;
 
   event.type            = GAME_INPUT_EVENT_KEY;
@@ -92,16 +90,7 @@ bool CGameClientKeyboard::OnKeyPress(const KEYBOARD::KeyName &key, KEYBOARD::Mod
   event.key.unicode     = unicode;
   event.key.modifiers   = CGameClientTranslator::GetModifiers(mod);
 
-  try
-  {
-    bHandled = m_dllStruct.InputEvent(&event);
-  }
-  catch (...)
-  {
-    CLog::Log(LOGERROR, "GAME: %s: exception caught in InputEvent()", m_gameClient.ID().c_str());
-  }
-
-  return bHandled;
+  return m_gameClient.Input().InputEvent(event);
 }
 
 void CGameClientKeyboard::OnKeyRelease(const KEYBOARD::KeyName &key, KEYBOARD::Modifier mod, uint32_t unicode)
@@ -117,12 +106,5 @@ void CGameClientKeyboard::OnKeyRelease(const KEYBOARD::KeyName &key, KEYBOARD::M
   event.key.unicode     = unicode;
   event.key.modifiers   = CGameClientTranslator::GetModifiers(mod);
 
-  try
-  {
-    m_dllStruct.InputEvent(&event);
-  }
-  catch (...)
-  {
-    CLog::Log(LOGERROR, "GAME: %s: exception caught in InputEvent()", m_gameClient.ID().c_str());
-  }
+  m_gameClient.Input().InputEvent(event);
 }

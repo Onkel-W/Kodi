@@ -134,6 +134,22 @@ bool CGameClientInput::AcceptsInput() const
   return CServiceBroker::GetGUI()->GetWindowManager().GetActiveWindowOrDialog() == WINDOW_FULLSCREEN_GAME;
 }
 
+bool CGameClientInput::InputEvent(const game_input_event &event)
+{
+  bool bHandled = false;
+
+  try
+  {
+    bHandled = m_struct.toAddon.InputEvent(&event);
+  }
+  catch (...)
+  {
+    CLog::Log(LOGERROR, "GAME: %s: exception caught in InputEvent()", m_gameClient.ID().c_str());
+  }
+
+  return bHandled;
+}
+
 void CGameClientInput::LoadTopology()
 {
   game_input_topology *topologyStruct = nullptr;

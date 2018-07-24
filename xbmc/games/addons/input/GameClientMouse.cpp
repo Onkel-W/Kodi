@@ -31,7 +31,7 @@
 using namespace KODI;
 using namespace GAME;
 
-CGameClientMouse::CGameClientMouse(const CGameClient &gameClient,
+CGameClientMouse::CGameClientMouse(CGameClient &gameClient,
                                    std::string controllerId,
                                    const KodiToAddonFuncTable_Game &dllStruct,
                                    MOUSE::IMouseInputProvider *inputProvider) :
@@ -61,8 +61,6 @@ bool CGameClientMouse::OnMotion(const std::string& relpointer, int dx, int dy)
     return false;
   }
 
-  bool bHandled = false;
-
   const std::string controllerId = ControllerID();
 
   game_input_event event;
@@ -75,16 +73,8 @@ bool CGameClientMouse::OnMotion(const std::string& relpointer, int dx, int dy)
   event.rel_pointer.x   = dx;
   event.rel_pointer.y   = dy;
 
-  try
-  {
-    bHandled = m_dllStruct.InputEvent(&event);
-  }
-  catch (...)
-  {
-    CLog::Log(LOGERROR, "GAME: %s: exception caught in InputEvent()", m_gameClient.ID().c_str());
-  }
 
-  return bHandled;
+  return m_gameClient.Input().InputEvent(event);
 }
 
 bool CGameClientMouse::OnButtonPress(const std::string& button)
@@ -95,8 +85,6 @@ bool CGameClientMouse::OnButtonPress(const std::string& button)
     return false;
   }
 
-  bool bHandled = false;
-
   game_input_event event;
 
   event.type                   = GAME_INPUT_EVENT_DIGITAL_BUTTON;
@@ -106,16 +94,8 @@ bool CGameClientMouse::OnButtonPress(const std::string& button)
   event.feature_name           = button.c_str();
   event.digital_button.pressed = true;
 
-  try
-  {
-    bHandled = m_dllStruct.InputEvent(&event);
-  }
-  catch (...)
-  {
-    CLog::Log(LOGERROR, "GAME: %s: exception caught in InputEvent()", m_gameClient.ID().c_str());
-  }
 
-  return bHandled;
+  return m_gameClient.Input().InputEvent(event);
 }
 
 void CGameClientMouse::OnButtonRelease(const std::string& button)
@@ -129,12 +109,6 @@ void CGameClientMouse::OnButtonRelease(const std::string& button)
   event.feature_name           = button.c_str();
   event.digital_button.pressed = false;
 
-  try
-  {
-    m_dllStruct.InputEvent(&event);
-  }
-  catch (...)
-  {
-    CLog::Log(LOGERROR, "GAME: %s: exception caught in InputEvent()", m_gameClient.ID().c_str());
-  }
+
+  m_gameClient.Input().InputEvent(event);
 }

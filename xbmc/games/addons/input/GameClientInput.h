@@ -65,6 +65,7 @@ namespace GAME
 
     // Input functions
     bool AcceptsInput() const;
+    bool InputEvent(const game_input_event &event);
 
     // Topology functions
     const CControllerTree &GetControllerTree() const { return m_controllers; }
