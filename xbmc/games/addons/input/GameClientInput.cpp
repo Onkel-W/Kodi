@@ -19,6 +19,7 @@
  */
 
 #include "GameClientInput.h"
+#include "GameClientController.h"
 #include "GameClientHardware.h"
 #include "GameClientJoystick.h"
 #include "GameClientKeyboard.h"
@@ -61,6 +62,10 @@ CGameClientInput::~CGameClientInput()
 void CGameClientInput::Initialize()
 {
   LoadTopology();
+
+  ActivateControllers(m_topology->ControllerTree());
+
+  SetControllerLayouts(m_topology->ControllerTree().GetControllers());
 }
 
 void CGameClientInput::Start()
@@ -113,6 +118,7 @@ void CGameClientInput::Deinitialize()
   Stop();
 
   m_topology->Clear();
+  m_controllerLayouts.clear();
 }
 
 void CGameClientInput::Stop()
@@ -189,8 +195,6 @@ void CGameClientInput::LoadTopology()
     hardwarePorts.emplace_back(new CGameClientPort(GetControllers(m_gameClient)));
 
   m_topology.reset(new CGameClientTopology(std::move(hardwarePorts), playerLimit));
-
-  ActivateControllers(m_topology->ControllerTree());
 }
 
 void CGameClientInput::ActivateControllers(CControllerHub &hub)
@@ -200,6 +204,37 @@ void CGameClientInput::ActivateControllers(CControllerHub &hub)
     port.SetActiveController(0);
     ActivateControllers(port.ActiveController().Hub());
   }
+}
+
+void CGameClientInput::SetControllerLayouts(const ControllerVector &controllers)
+{
+  if (controllers.empty())
+    return;
+
+  for (const auto &controller : controllers)
+  {
+    const std::string controllerId = controller->ID();
+    if (m_controllerLayouts.find(controllerId) == m_controllerLayouts.end())
+      m_controllerLayouts[controllerId].reset(new CGameClientController(controller));
+  }
+
+  std::vector<game_controller_layout> controllerStructs;
+  for (const auto &it : m_controllerLayouts)
+    controllerStructs.emplace_back(it.second->TranslateController());
+
+  try
+  {
+    m_struct.toAddon.SetControllerLayouts(controllerStructs.data(), controllerStructs.size());
+  }
+  catch (...)
+  {
+    m_gameClient.LogException("SetControllerLayouts()");
+  }
+}
+
+const CControllerTree &CGameClientInput::GetControllerTree() const
+{
+  return m_topology->ControllerTree();
 }
 
 bool CGameClientInput::SupportsKeyboard() const
@@ -244,20 +279,6 @@ bool CGameClientInput::OpenKeyboard(const ControllerPtr &controller)
   if (keyboards.empty())
     return false;
 
-  std::string controllerId = controller->ID();
-
-  game_controller controllerStruct{};
-
-  controllerStruct.controller_id        = controllerId.c_str();
-  controllerStruct.digital_button_count = controller->FeatureCount(FEATURE_TYPE::SCALAR, INPUT_TYPE::DIGITAL);
-  controllerStruct.analog_button_count  = controller->FeatureCount(FEATURE_TYPE::SCALAR, INPUT_TYPE::ANALOG);
-  controllerStruct.analog_stick_count   = controller->FeatureCount(FEATURE_TYPE::ANALOG_STICK);
-  controllerStruct.accelerometer_count  = controller->FeatureCount(FEATURE_TYPE::ACCELEROMETER);
-  controllerStruct.key_count            = controller->FeatureCount(FEATURE_TYPE::KEY);
-  controllerStruct.rel_pointer_count    = controller->FeatureCount(FEATURE_TYPE::RELPOINTER);
-  controllerStruct.abs_pointer_count    = controller->FeatureCount(FEATURE_TYPE::ABSPOINTER);
-  controllerStruct.motor_count          = controller->FeatureCount(FEATURE_TYPE::MOTOR);
-
   bool bSuccess = false;
 
   {
@@ -267,7 +288,7 @@ bool CGameClientInput::OpenKeyboard(const ControllerPtr &controller)
     {
       try
       {
-        bSuccess = m_struct.toAddon.EnableKeyboard(true, &controllerStruct);
+        bSuccess = m_struct.toAddon.EnableKeyboard(true, controller->ID().c_str());
       }
       catch (...)
       {
@@ -278,7 +299,7 @@ bool CGameClientInput::OpenKeyboard(const ControllerPtr &controller)
 
   if (bSuccess)
   {
-    m_keyboard.reset(new CGameClientKeyboard(m_gameClient, controllerId, m_struct.toAddon, keyboards.at(0).get()));
+    m_keyboard.reset(new CGameClientKeyboard(m_gameClient, controller->ID(), m_struct.toAddon, keyboards.at(0).get()));
     return true;
   }
 
@@ -322,20 +343,6 @@ bool CGameClientInput::OpenMouse(const ControllerPtr &controller)
   if (mice.empty())
     return false;
 
-  std::string controllerId = controller->ID();
-
-  game_controller controllerStruct{};
-
-  controllerStruct.controller_id        = controllerId.c_str();
-  controllerStruct.digital_button_count = controller->FeatureCount(FEATURE_TYPE::SCALAR, INPUT_TYPE::DIGITAL);
-  controllerStruct.analog_button_count  = controller->FeatureCount(FEATURE_TYPE::SCALAR, INPUT_TYPE::ANALOG);
-  controllerStruct.analog_stick_count   = controller->FeatureCount(FEATURE_TYPE::ANALOG_STICK);
-  controllerStruct.accelerometer_count  = controller->FeatureCount(FEATURE_TYPE::ACCELEROMETER);
-  controllerStruct.key_count            = controller->FeatureCount(FEATURE_TYPE::KEY);
-  controllerStruct.rel_pointer_count    = controller->FeatureCount(FEATURE_TYPE::RELPOINTER);
-  controllerStruct.abs_pointer_count    = controller->FeatureCount(FEATURE_TYPE::ABSPOINTER);
-  controllerStruct.motor_count          = controller->FeatureCount(FEATURE_TYPE::MOTOR);
-
   bool bSuccess = false;
 
   {
@@ -345,7 +352,7 @@ bool CGameClientInput::OpenMouse(const ControllerPtr &controller)
     {
       try
       {
-        bSuccess = m_struct.toAddon.EnableMouse(true, &controllerStruct);
+        bSuccess = m_struct.toAddon.EnableMouse(true, controller->ID().c_str());
       }
       catch (...)
       {
@@ -356,7 +363,7 @@ bool CGameClientInput::OpenMouse(const ControllerPtr &controller)
 
   if (bSuccess)
   {
-    m_mouse.reset(new CGameClientMouse(m_gameClient, controllerId, m_struct.toAddon, mice.at(0).get()));
+    m_mouse.reset(new CGameClientMouse(m_gameClient, controller->ID(), m_struct.toAddon, mice.at(0).get()));
     return true;
   }
 
@@ -404,21 +411,6 @@ bool CGameClientInput::OpenJoystick(const std::string &portAddress, const Contro
     return false;
   }
 
-  std::string strId = controller->ID();
-
-  game_controller controllerStruct{};
-
-  controllerStruct.controller_id        = strId.c_str();
-  controllerStruct.provides_input       = controller->Topology().ProvidesInput();
-  controllerStruct.digital_button_count = controller->FeatureCount(FEATURE_TYPE::SCALAR, INPUT_TYPE::DIGITAL);
-  controllerStruct.analog_button_count  = controller->FeatureCount(FEATURE_TYPE::SCALAR, INPUT_TYPE::ANALOG);
-  controllerStruct.analog_stick_count   = controller->FeatureCount(FEATURE_TYPE::ANALOG_STICK);
-  controllerStruct.accelerometer_count  = controller->FeatureCount(FEATURE_TYPE::ACCELEROMETER);
-  controllerStruct.key_count            = controller->FeatureCount(FEATURE_TYPE::KEY);
-  controllerStruct.rel_pointer_count    = controller->FeatureCount(FEATURE_TYPE::RELPOINTER);
-  controllerStruct.abs_pointer_count    = controller->FeatureCount(FEATURE_TYPE::ABSPOINTER);
-  controllerStruct.motor_count          = controller->FeatureCount(FEATURE_TYPE::MOTOR);
-
   bool bSuccess = false;
 
   {
@@ -428,7 +420,7 @@ bool CGameClientInput::OpenJoystick(const std::string &portAddress, const Contro
     {
       try
       {
-        bSuccess = m_struct.toAddon.ConnectController(true, portAddress.c_str(), &controllerStruct);
+        bSuccess = m_struct.toAddon.ConnectController(true, portAddress.c_str(), controller->ID().c_str());
       }
       catch (...)
       {
