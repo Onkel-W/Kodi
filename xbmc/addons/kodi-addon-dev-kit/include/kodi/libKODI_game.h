@@ -147,6 +147,26 @@ public:
   // --- Input callbacks -------------------------------------------------------
 
   /*!
+   * \brief Get the configuration and state of all controllers
+   *
+   * \param[out] input_topology The configuration of input ports
+   * \param[out] controller_states The state of all connected controllers
+   *
+   * Output parameters must be freed if this function returns true.
+   *
+   * \return true if there was input for the frame, false otherwise
+   */
+  bool GetInput(game_input_topology **input_topology, game_controller_states **controller_states);
+
+  /*!
+   * \brief Free the input structures returned from GetInput()
+   *
+   * \param input_topology The input topology to free
+   * \param controller_states The controller states to free
+   */
+  void FreeInput(game_input_topology *input_topology, game_controller_states *controller_states);
+
+  /*!
    * \brief Notify the port of an input event
    *
    * \param event The input event

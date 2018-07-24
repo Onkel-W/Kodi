@@ -385,6 +385,30 @@ typedef struct game_motor_state
   float        magnitude;
 } ATTRIBUTE_PACKED game_motor_state;
 
+typedef struct game_controller_state
+{
+  game_digital_button_state *digital_buttons;
+  unsigned int digital_button_count;
+  game_analog_button_state *analog_buttons;
+  unsigned int analog_button_count;
+  game_analog_stick_state *analog_sticks;
+  unsigned int analog_stick_count;
+  game_accelerometer_state *acceleromters;
+  unsigned int accelerometer_count;
+  game_key_state *keys;
+  unsigned int key_count;
+  game_rel_pointer_state *rel_pointers;
+  unsigned int rel_pointer_count;
+  game_abs_pointer_state *abs_pointers;
+  unsigned int game_abs_pointer_count;
+} ATTRIBUTE_PACKED game_controller_state;
+
+typedef struct game_controller_states
+{
+  game_controller_state *controllers;
+  unsigned int controller_count;
+} ATTRIBUTE_PACKED game_controller_states;
+
 typedef struct game_input_feature
 {
   const char* name;
