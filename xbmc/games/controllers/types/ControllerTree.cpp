@@ -22,6 +22,7 @@
 #include "games/controllers/Controller.h"
 #include "games/controllers/ControllerTopology.h"
 
+#include <algorithm>
 #include <utility>
 
 using namespace KODI;
