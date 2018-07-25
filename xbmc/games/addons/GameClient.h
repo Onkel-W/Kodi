@@ -138,6 +138,8 @@ private:
   static void cb_release_stream_buffer(void* kodiInstance, void *stream, game_stream_buffer *buffer);
   static void cb_close_stream(void* kodiInstance, void *stream);
   static game_proc_address_t cb_hw_get_proc_address(void* kodiInstance, const char* sym);
+  static bool cb_get_input(void* kodiInstance, game_input_topology **input_topology, game_controller_state **controller_states, unsigned int *controller_count);
+  static void cb_free_input(void* kodiInstance, game_input_topology *input_topology, game_controller_state *controller_states, unsigned int controller_count);
   static bool cb_input_event(void* kodiInstance, const game_input_event* event);
   //@}
 

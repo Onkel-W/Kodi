@@ -31,7 +31,9 @@
 #include <string>
 
 class CCriticalSection;
+struct game_controller_state;
 struct game_input_event;
+struct game_input_topology;
 
 namespace KODI
 {
@@ -91,6 +93,8 @@ namespace GAME
     void HardwareReset();
 
     // Input callbacks
+    bool GetInput(game_input_topology *&input_topology, game_controller_state *&controller_states, unsigned int &controller_count);
+    void FreeInput(game_input_topology *input_topology, game_controller_state *controller_states, unsigned int controller_count);
     bool ReceiveInputEvent(const game_input_event& eventStruct);
 
     // Implementation of Observer

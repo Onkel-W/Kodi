@@ -208,3 +208,17 @@ PORT_TYPE CGameClientTranslator::TranslatePortType(GAME_PORT_TYPE portType)
 
   return PORT_TYPE::UNKNOWN;
 }
+
+GAME_PORT_TYPE CGameClientTranslator::TranslatePortType(PORT_TYPE portType)
+{
+  switch (portType)
+  {
+    case PORT_TYPE::KEYBOARD:    return GAME_PORT_KEYBOARD;
+    case PORT_TYPE::MOUSE:       return GAME_PORT_MOUSE;
+    case PORT_TYPE::CONTROLLER:  return GAME_PORT_CONTROLLER;
+    default:
+      break;
+  }
+
+  return GAME_PORT_UNKNOWN;
+}

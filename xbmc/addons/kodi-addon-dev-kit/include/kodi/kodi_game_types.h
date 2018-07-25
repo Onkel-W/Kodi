@@ -421,14 +421,6 @@ typedef enum GAME_SIMD
 
 typedef enum GAME_INPUT_EVENT_SOURCE
 {
-  GAME_INPUT_EVENT_DIGITAL_BUTTON,
-  GAME_INPUT_EVENT_ANALOG_BUTTON,
-  GAME_INPUT_EVENT_AXIS,
-  GAME_INPUT_EVENT_ANALOG_STICK,
-  GAME_INPUT_EVENT_ACCELEROMETER,
-  GAME_INPUT_EVENT_KEY,
-  GAME_INPUT_EVENT_RELATIVE_POINTER,
-  GAME_INPUT_EVENT_ABSOLUTE_POINTER,
   GAME_INPUT_EVENT_MOTOR,
 } GAME_INPUT_EVENT_SOURCE;
 
@@ -487,8 +479,7 @@ struct game_input_port;
  */
 typedef struct game_input_device
 {
-  const char*      controller_id; // ID used in the Kodi controller API
-  const char*      port_address;
+  char*            controller_id; // ID used in the Kodi controller API
   game_input_port* available_ports;
   unsigned int     port_count;
 } ATTRIBUTE_PACKED game_input_device;
@@ -503,7 +494,7 @@ typedef struct game_input_device
 typedef struct game_input_port
 {
   GAME_PORT_TYPE     type;
-  const char*        port_id; // Required for GAME_PORT_CONTROLLER type
+  char*              port_id; // Required for GAME_PORT_CONTROLLER type
   game_input_device* accepted_devices;
   unsigned int       device_count;
 } ATTRIBUTE_PACKED game_input_port;
@@ -522,35 +513,35 @@ typedef struct game_input_topology
   int player_limit; //! A limit on the number of input-providing devices, or -1 for no limit
 } ATTRIBUTE_PACKED game_input_topology;
 
-typedef struct game_digital_button_event
+typedef struct game_digital_button_state
 {
   bool         pressed;
-} ATTRIBUTE_PACKED game_digital_button_event;
+} ATTRIBUTE_PACKED game_digital_button_state;
 
-typedef struct game_analog_button_event
+typedef struct game_analog_button_state
 {
   float        magnitude;
-} ATTRIBUTE_PACKED game_analog_button_event;
+} ATTRIBUTE_PACKED game_analog_button_state;
 
-typedef struct game_axis_event
+typedef struct game_axis_state
 {
   float        position;
-} ATTRIBUTE_PACKED game_axis_event;
+} ATTRIBUTE_PACKED game_axis_state;
 
-typedef struct game_analog_stick_event
+typedef struct game_analog_stick_state
 {
   float        x;
   float        y;
-} ATTRIBUTE_PACKED game_analog_stick_event;
+} ATTRIBUTE_PACKED game_analog_stick_state;
 
-typedef struct game_accelerometer_event
+typedef struct game_accelerometer_state
 {
   float        x;
   float        y;
   float        z;
-} ATTRIBUTE_PACKED game_accelerometer_event;
+} ATTRIBUTE_PACKED game_accelerometer_state;
 
-typedef struct game_key_event
+typedef struct game_key_state
 {
   bool         pressed;
 
@@ -562,20 +553,39 @@ typedef struct game_key_event
   uint32_t unicode;
 
   GAME_KEY_MOD modifiers;
-} ATTRIBUTE_PACKED game_key_event;
+} ATTRIBUTE_PACKED game_key_state;
 
-typedef struct game_rel_pointer_event
+typedef struct game_rel_pointer_state
 {
   int          x;
   int          y;
-} ATTRIBUTE_PACKED game_rel_pointer_event;
+} ATTRIBUTE_PACKED game_rel_pointer_state;
 
-typedef struct game_abs_pointer_event
+typedef struct game_abs_pointer_state
 {
   bool         pressed;
   float        x;
   float        y;
-} ATTRIBUTE_PACKED game_abs_pointer_event;
+} ATTRIBUTE_PACKED game_abs_pointer_state;
+
+typedef struct game_controller_state
+{
+  char*                      port_address;
+  game_digital_button_state* digital_buttons;
+  unsigned int               digital_button_count;
+  game_analog_button_state*  analog_buttons;
+  unsigned int               analog_button_count;
+  game_analog_stick_state*   analog_sticks;
+  unsigned int               analog_stick_count;
+  game_accelerometer_state*  acceleromters;
+  unsigned int               accelerometer_count;
+  game_key_state*            keys;
+  unsigned int               key_count;
+  game_rel_pointer_state*    rel_pointers;
+  unsigned int               rel_pointer_count;
+  game_abs_pointer_state*    abs_pointers;
+  unsigned int               game_abs_pointer_count;
+} ATTRIBUTE_PACKED game_controller_state;
 
 typedef struct game_motor_event
 {
@@ -586,19 +596,10 @@ typedef struct game_input_event
 {
   GAME_INPUT_EVENT_SOURCE type;
   const char*             controller_id;
-  GAME_PORT_TYPE          port_type;
   const char*             port_address;
   const char*             feature_name;
   union
   {
-    struct game_digital_button_event digital_button;
-    struct game_analog_button_event  analog_button;
-    struct game_axis_event           axis;
-    struct game_analog_stick_event   analog_stick;
-    struct game_accelerometer_event  accelerometer;
-    struct game_key_event            key;
-    struct game_rel_pointer_event    rel_pointer;
-    struct game_abs_pointer_event    abs_pointer;
     struct game_motor_event          motor;
   };
 } ATTRIBUTE_PACKED game_input_event;
@@ -679,8 +680,10 @@ typedef struct AddonToKodiFuncTable_Game
   void (*AddStreamData)(void*, void*, const game_stream_packet*);
   void (*ReleaseStreamBuffer)(void*, void*, game_stream_buffer*);
   void (*CloseStream)(void*, void*);
-  game_proc_address_t (*HwGetProcAddress)(void* kodiInstance, const char* symbol);
-  bool (*InputEvent)(void* kodiInstance, const game_input_event* event);
+  game_proc_address_t (*HwGetProcAddress)(void*, const char*);
+  bool (*GetInput)(void*, game_input_topology**, game_controller_state**, unsigned int*);
+  void (*FreeInput)(void*, game_input_topology*, game_controller_state*, unsigned int);
+  bool (*InputEvent)(void*, const game_input_event*);
 
 } AddonToKodiFuncTable_Game;
 
@@ -704,7 +707,6 @@ typedef struct KodiToAddonFuncTable_Game
   bool        (__cdecl* EnableKeyboard)(bool, const char*);
   bool        (__cdecl* EnableMouse)(bool, const char*);
   bool        (__cdecl* ConnectController)(bool, const char*, const char*);
-  bool        (__cdecl* InputEvent)(const game_input_event*);
   size_t      (__cdecl* SerializeSize)(void);
   GAME_ERROR  (__cdecl* Serialize)(uint8_t*, size_t);
   GAME_ERROR  (__cdecl* Deserialize)(const uint8_t*, size_t);

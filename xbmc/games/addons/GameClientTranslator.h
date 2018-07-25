@@ -121,6 +121,13 @@ namespace GAME
      * \return Translated port type
      */
     static PORT_TYPE TranslatePortType(GAME_PORT_TYPE portType);
+
+    /*!
+     * \brief Translate port type (Kodi to Game API)
+     * \param portType  The port type to translate
+     * \return Translated port type
+     */
+    static GAME_PORT_TYPE TranslatePortType(PORT_TYPE portType);
   };
 }
 }

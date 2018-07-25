@@ -209,6 +209,8 @@ bool CGameClient::Initialize(void)
   m_struct.toKodi.ReleaseStreamBuffer = cb_release_stream_buffer;
   m_struct.toKodi.CloseStream = cb_close_stream;
   m_struct.toKodi.HwGetProcAddress = cb_hw_get_proc_address;
+  m_struct.toKodi.GetInput = cb_get_input;
+  m_struct.toKodi.FreeInput = cb_free_input;
   m_struct.toKodi.InputEvent = cb_input_event;
 
   if (Create(ADDON_INSTANCE_GAME, &m_struct, &m_struct.props) == ADDON_STATUS_OK)
@@ -642,6 +644,29 @@ game_proc_address_t CGameClient::cb_hw_get_proc_address(void* kodiInstance, cons
 
   //! @todo
   return nullptr;
+}
+
+bool CGameClient::cb_get_input(void* kodiInstance, game_input_topology **input_topology, game_controller_state **controller_states, unsigned int *controller_count)
+{
+  CGameClient *gameClient = static_cast<CGameClient*>(kodiInstance);
+  if (gameClient == nullptr)
+    return false;
+
+  if (input_topology == nullptr ||
+      controller_states == nullptr ||
+      controller_count == nullptr)
+    return false;
+
+  return gameClient->Input().GetInput(*input_topology, *controller_states, *controller_count);
+}
+
+void CGameClient::cb_free_input(void* kodiInstance, game_input_topology *input_topology, game_controller_state *controller_states, unsigned int controller_count)
+{
+  CGameClient *gameClient = static_cast<CGameClient*>(kodiInstance);
+  if (gameClient == nullptr)
+    return;
+
+  return gameClient->Input().FreeInput(input_topology, controller_states, controller_count);
 }
 
 bool CGameClient::cb_input_event(void* kodiInstance, const game_input_event* event)

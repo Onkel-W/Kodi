@@ -21,6 +21,8 @@
 #include "GameClientTopology.h"
 #include "GameClientDevice.h"
 #include "GameClientPort.h"
+#include "addons/kodi-addon-dev-kit/include/kodi/kodi_game_types.h"
+#include "games/addons/GameClientTranslator.h"
 #include "games/controllers/Controller.h"
 
 #include <sstream>
@@ -103,6 +105,101 @@ CControllerNode CGameClientTopology::GetControllerNode(const GameClientDevicePtr
   controllerNode.SetHub(std::move(controllerHub));
 
   return controllerNode;
+}
+
+game_input_topology *CGameClientTopology::GetTopology() const
+{
+  game_input_topology *inputTopology = nullptr;
+
+  const ControllerPortVec &ports = m_controllers.Ports();
+  if (!ports.empty())
+    inputTopology = GetTopology(ports, m_playerLimit);
+
+  return inputTopology;
+}
+
+game_input_topology *CGameClientTopology::GetTopology(const ControllerPortVec &ports, int playerLimit)
+{
+  game_input_topology *topology = new game_input_topology;
+
+  topology->port_count = ports.size();
+  topology->ports = new game_input_port[topology->port_count];
+  topology->player_limit = playerLimit;
+
+  for (unsigned int i = 0; i < topology->port_count; i++)
+  {
+    const CControllerPortNode &portNode = ports.at(i);
+    GetPort(portNode, topology->ports[i]);
+  }
+
+  return topology;
+}
+
+void CGameClientTopology::FreeTopology(game_input_topology *inputTopology) const
+{
+  if (inputTopology)
+  {
+    for (unsigned int i = 0; i < inputTopology->port_count; i++)
+      FreePort(inputTopology->ports[i]);
+
+    delete[] inputTopology->ports;
+    delete inputTopology;
+  }
+}
+
+void CGameClientTopology::GetPort(const CControllerPortNode &portNode, game_input_port &gamePort)
+{
+  gamePort.type = CGameClientTranslator::TranslatePortType(portNode.PortType());
+  gamePort.port_id = const_cast<char*>(portNode.PortID().c_str());
+
+  const CControllerNode &controllerNode = portNode.ActiveController();
+  const ControllerPtr &controller = controllerNode.Controller();
+
+  if (controller)
+  {
+    gamePort.accepted_devices = new game_input_device;
+    gamePort.device_count = 1;
+
+    game_input_device &gameDevice = gamePort.accepted_devices[0];
+    GetDevice(controllerNode, gameDevice);
+  }
+}
+
+void CGameClientTopology::FreePort(game_input_port &gamePort)
+{
+  for (unsigned int i = 0; i < gamePort.device_count; i++)
+  {
+    game_input_device &gameDevice = gamePort.accepted_devices[i];
+    FreeDevice(gameDevice);
+  }
+
+  delete[] gamePort.accepted_devices;
+}
+
+void CGameClientTopology::GetDevice(const CControllerNode &controllerNode, game_input_device &gameDevice)
+{
+  gameDevice.controller_id = const_cast<char*>(controllerNode.Controller()->ID().c_str());
+
+  const ControllerPortVec &ports = controllerNode.Hub().Ports();
+  if (!ports.empty())
+  {
+    gameDevice.port_count = ports.size();
+    gameDevice.available_ports = new game_input_port[gameDevice.port_count];
+
+    for (unsigned int i = 0; i < gameDevice.port_count; i++)
+    {
+      game_input_port &gamePort = gameDevice.available_ports[i];
+      GetPort(ports[i], gamePort);
+    }
+  }
+}
+
+void CGameClientTopology::FreeDevice(game_input_device &gameDevice)
+{
+  for (unsigned int j = 0; j < gameDevice.port_count; j++)
+    FreePort(gameDevice.available_ports[j]);
+
+  delete[] gameDevice.available_ports;
 }
 
 std::string CGameClientTopology::MakeAddress(const std::string &baseAddress, const std::string &nodeId)

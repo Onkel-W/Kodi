@@ -237,15 +237,6 @@ bool EnableMouse(bool enable, const char* controller_id);
  */
 bool ConnectController(bool connect, const char* port_address, const char* controller_id);
 
-/*!
- * \brief Notify the add-on of an input event
- *
- * \param event The input event
- *
- * \return true if the event was handled, false otherwise
- */
-bool InputEvent(const game_input_event* event);
-
 // --- Serialization operations ------------------------------------------------
 
 /*!
@@ -336,7 +327,6 @@ void __declspec(dllexport) get_addon(void* ptr)
   pClient->toAddon.EnableKeyboard           = EnableKeyboard;
   pClient->toAddon.EnableMouse              = EnableMouse;
   pClient->toAddon.ConnectController        = ConnectController;
-  pClient->toAddon.InputEvent               = InputEvent;
   pClient->toAddon.SerializeSize            = SerializeSize;
   pClient->toAddon.Serialize                = Serialize;
   pClient->toAddon.Deserialize              = Deserialize;

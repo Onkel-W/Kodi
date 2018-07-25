@@ -42,6 +42,7 @@
 #include "ServiceBroker.h"
 
 #include <algorithm>
+#include <cstring>
 
 using namespace KODI;
 using namespace GAME;
@@ -166,14 +167,7 @@ bool CGameClientInput::InputEvent(const game_input_event &event)
 {
   bool bHandled = false;
 
-  try
-  {
-    bHandled = m_struct.toAddon.InputEvent(&event);
-  }
-  catch (...)
-  {
-    CLog::Log(LOGERROR, "GAME: %s: exception caught in InputEvent()", m_gameClient.ID().c_str());
-  }
+  //! @todo
 
   return bHandled;
 }
@@ -497,6 +491,26 @@ void CGameClientInput::HardwareReset()
 {
   if (m_hardware)
     m_hardware->OnResetButton();
+}
+
+bool CGameClientInput::GetInput(game_input_topology *&input_topology, game_controller_state *&controller_states, unsigned int &controller_count)
+{
+  input_topology = m_topology->GetTopology();
+  if (input_topology != nullptr)
+  {
+    //! @todo Controller state
+
+    return true;
+  }
+
+  return false;
+}
+
+void CGameClientInput::FreeInput(game_input_topology *input_topology, game_controller_state *controller_states, unsigned int controller_count)
+{
+  m_topology->FreeTopology(input_topology);
+
+  //! @todo Controller states
 }
 
 bool CGameClientInput::ReceiveInputEvent(const game_input_event& event)

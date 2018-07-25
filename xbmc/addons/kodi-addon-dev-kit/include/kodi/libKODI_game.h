@@ -147,6 +147,37 @@ public:
   // --- Input callbacks -------------------------------------------------------
 
   /*!
+   * \brief Get the topology and state of all controllers
+   *
+   * \param[out] input_topology The topology of controllers. accepted_devices contains
+   *             the active controller instead of all accepted ones.
+   * \param[out] controller_states The state of all connected controllers, or NULL if
+   *             no controllers are connected
+   * \param[out] controller_count The number of controllers in the state array
+   *
+   * Output parameters must be freed if this function returns true.
+   *
+   * \return true if there was input for the frame, false if there was no
+   *         input since the last time this function was called
+   */
+  bool GetInput(game_input_topology* &input_topology, game_controller_state* &controller_states, unsigned int &controller_count)
+  {
+    return m_callbacks->toKodi.GetInput(m_callbacks->toKodi.kodiInstance, &input_topology, &controller_states, &controller_count);
+  }
+
+  /*!
+   * \brief Free the input structures returned from GetInput()
+   *
+   * \param input_topology The input topology to free
+   * \param controller_states The controller states to free
+   * \param controller_count The number of controllers in the state array
+   */
+  void FreeInput(game_input_topology* input_topology, game_controller_state* controller_states, unsigned int controller_count)
+  {
+    m_callbacks->toKodi.FreeInput(m_callbacks->toKodi.kodiInstance, input_topology, controller_states, controller_count);
+  }
+
+  /*!
    * \brief Notify the port of an input event
    *
    * \param event The input event
