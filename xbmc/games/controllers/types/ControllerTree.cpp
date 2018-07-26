@@ -49,6 +49,13 @@ CControllerNode &CControllerNode::operator=(const CControllerNode &rhs)
   return *this;
 }
 
+void CControllerNode::Clear()
+{
+  m_controller.reset();
+  m_address.clear();
+  m_hub.reset(new CControllerHub);
+}
+
 void CControllerNode::SetController(ControllerPtr controller)
 {
   m_controller = std::move(controller);
@@ -127,6 +134,16 @@ const CControllerNode &CControllerPortNode::ActiveController() const
     return m_controllers[m_active];
 
   static const CControllerNode invalid{};
+  return invalid;
+}
+
+CControllerNode &CControllerPortNode::ActiveController()
+{
+  if (m_bConnected && m_active < m_controllers.size())
+    return m_controllers[m_active];
+
+  static CControllerNode invalid;
+  invalid.Clear();
   return invalid;
 }
 
@@ -213,6 +230,11 @@ CControllerHub &CControllerHub::operator=(const CControllerHub &rhs)
   }
 
   return *this;
+}
+
+void CControllerHub::Clear()
+{
+  m_ports.clear();
 }
 
 void CControllerHub::SetPorts(ControllerPortVec ports)

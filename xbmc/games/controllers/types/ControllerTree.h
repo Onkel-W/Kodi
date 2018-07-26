@@ -49,6 +49,8 @@ namespace GAME
     CControllerNode &operator=(const CControllerNode &rhs);
     ~CControllerNode();
 
+    void Clear();
+
     /*!
      * \brief Controller profile of this code
      *
@@ -72,6 +74,7 @@ namespace GAME
      *         has no available ports
      */
     const CControllerHub &Hub() const { return *m_hub; }
+    CControllerHub &Hub() { return *m_hub; }
     void SetHub(CControllerHub hub);
 
     /*!
@@ -138,6 +141,7 @@ namespace GAME
      * \return The active controller, or invalid if port is disconnected
      */
     const CControllerNode &ActiveController() const;
+    CControllerNode &ActiveController();
     void SetActiveController(unsigned int controllerIndex) { m_active = controllerIndex; }
 
     /*!
@@ -220,7 +224,10 @@ namespace GAME
     CControllerHub &operator=(const CControllerHub &rhs);
     ~CControllerHub();
 
+    void Clear();
+
     bool HasPorts() const { return !m_ports.empty(); }
+    ControllerPortVec &Ports() { return m_ports; }
     const ControllerPortVec &Ports() const { return m_ports; }
     void SetPorts(ControllerPortVec ports);
 
