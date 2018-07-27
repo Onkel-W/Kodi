@@ -48,7 +48,7 @@ namespace GAME
     /*!
      * \brief Get a controller layout for the Game API
      */
-    game_controller_layout TranslateController();
+    game_controller_layout TranslateController() const;
 
   private:
     // Construction parameters

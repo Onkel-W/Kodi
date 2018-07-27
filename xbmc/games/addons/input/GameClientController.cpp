@@ -35,30 +35,14 @@ CGameClientController::CGameClientController(CGameClientInput &input, Controller
   m_input(input),
   m_controller(std::move(controller))
 {
-}
-
-game_controller_layout CGameClientController::TranslateController()
-{
-  game_controller_layout controllerStruct{};
-
-  controllerStruct.controller_id = const_cast<char*>(m_controller->ID().c_str());
-  controllerStruct.provides_input = m_controller->Layout().Topology().ProvidesInput();
-
-  m_digitalButtons.clear();
-  m_analogButtons.clear();
-  m_analogSticks.clear();
-  m_accelerometers.clear();
-  m_keys.clear();
-  m_relPointers.clear();
-  m_absPointers.clear();
-  m_motors.clear();
-
+  // Generate arrays of features
   for (const CControllerFeature &feature : m_controller->Features())
   {
     // Skip feature if not supported by the game client
     if (!m_input.HasFeature(m_controller->ID(), feature.Name()))
       continue;
 
+    // Add feature to array of the appropriate type
     switch (feature.Type())
     {
       case FEATURE_TYPE::SCALAR:
@@ -100,6 +84,14 @@ game_controller_layout CGameClientController::TranslateController()
   }
 
   //! @todo Sort vectors
+}
+
+game_controller_layout CGameClientController::TranslateController() const
+{
+  game_controller_layout controllerStruct{};
+
+  controllerStruct.controller_id = const_cast<char*>(m_controller->ID().c_str());
+  controllerStruct.provides_input = m_controller->Layout().Topology().ProvidesInput();
 
   if (!m_digitalButtons.empty())
   {

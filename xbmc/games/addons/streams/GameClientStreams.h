@@ -47,6 +47,7 @@ public:
   void Deinitialize();
 
   IGameClientStream* OpenStream(const game_stream_properties &properties);
+  IGameClientStream* OpenInputStream();
   void CloseStream(IGameClientStream* stream);
 
 private:
