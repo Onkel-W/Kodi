@@ -2529,6 +2529,13 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
 
     break;
 
+  case TMSG_TOGGLE_LOGIN_SCREEN:
+  {
+    m_ServiceManager->GetProfileManager().ToggleLoginScreen();
+    m_ServiceManager->GetProfileManager().Save();
+    break;
+  }
+
   default:
     CLog::Log(LOGERROR, "%s: Unhandled threadmessage sent, %u", __FUNCTION__, msg);
     break;

@@ -153,10 +153,7 @@ bool CGUIWindowSettingsProfile::OnMessage(CGUIMessage& message)
       }
       else if (iControl == CONTROL_LOGINSCREEN)
       {
-        CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
-
-        profileManager.ToggleLoginScreen();
-        profileManager.Save();
+        MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_LOADPROFILE);
         return true;
       }
       else if (iControl == CONTROL_AUTOLOGIN)
