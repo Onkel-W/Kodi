@@ -158,15 +158,9 @@ bool CGUIWindowSettingsProfile::OnMessage(CGUIMessage& message)
       }
       else if (iControl == CONTROL_AUTOLOGIN)
       {
-        CProfilesManager &profileManager = CServiceBroker::GetProfileManager();
-
-        int currentId = profileManager.GetAutoLoginProfileId();
         int profileId;
-        if (GetAutoLoginProfileChoice(profileId) && (currentId != profileId))
-        {
-          profileManager.SetAutoLoginProfileId(profileId);
-          profileManager.Save();
-        }
+        if (GetAutoLoginProfileChoice(profileId))
+          MESSAGING::CApplicationMessenger::GetInstance().PostMsg(TMSG_SET_AUTOLOGIN, profileId);
         return true;
       }
     }

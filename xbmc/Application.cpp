@@ -2536,6 +2536,14 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
     break;
   }
 
+  case TMSG_SET_AUTOLOGIN:
+  {
+    const int profileId = pMsg->param1;
+    m_ServiceManager->GetProfileManager().SetAutoLoginProfileId(static_cast<unsigned int>(profileId));
+    m_ServiceManager->GetProfileManager().Save();
+    break;
+  }
+
   default:
     CLog::Log(LOGERROR, "%s: Unhandled threadmessage sent, %u", __FUNCTION__, msg);
     break;
