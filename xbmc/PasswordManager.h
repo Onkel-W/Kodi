@@ -26,11 +26,7 @@ class CURL;
 class CPasswordManager
 {
 public:
- /*!
-   \brief The only way through which the global instance of the CPasswordManager should be accessed.
-   \return the global instance.
-   */
-  static CPasswordManager &GetInstance();
+  CPasswordManager();
 
   /*!
    \brief Authenticate a URL by looking the URL up in the temporary and permanent caches
@@ -77,7 +73,7 @@ public:
    \return true if the URL is supported
    \sa CURL, IsURLSupported
    */
-  bool IsURLSupported(const CURL &url);
+  static bool IsURLSupported(const CURL &url);
 
   /*!
    \brief Clear any previously cached passwords
@@ -85,11 +81,8 @@ public:
   void Clear();
 
 private:
-  // private construction, and no assignments; use the provided singleton methods
-  CPasswordManager();
   CPasswordManager(const CPasswordManager&) = delete;
   CPasswordManager& operator=(CPasswordManager const&) = delete;
-  ~CPasswordManager() = default;
 
   void Load();
   void Save() const;
