@@ -44,6 +44,7 @@ if(ENABLE_INTERNAL_FLATBUFFERS)
                                  -DFLATBUFFERS_BUILD_GRPCTEST=OFF
                                  -DFLATBUFFERS_BUILD_SHAREDLIB=OFF
                                  "${EXTRA_ARGS}"
+                      PATCH_COMMAND patch -p1 < ${CORE_SOURCE_DIR}/tools/depends/native/flatbuffers-native/0001-Fix-compiler-warning.patch
                       BUILD_BYPRODUCTS ${FLATBUFFERS_FLATC_EXECUTABLE})
   set_target_properties(flatbuffers PROPERTIES FOLDER "External Projects"
                                     INTERFACE_INCLUDE_DIRECTORIES ${FLATBUFFERS_INCLUDE_DIR})
