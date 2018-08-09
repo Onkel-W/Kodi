@@ -596,7 +596,7 @@ std::vector<std::string> CGUIDialogMediaSource::GetPaths() const
       // and add the user/pass to the password manager - note, we haven't confirmed that it works
       // at this point, but if it doesn't, the user will get prompted anyway in implementation.
       CURL url(m_paths->Get(i)->GetPath());
-      if (CPasswordManager::IsURLSupported(url) && !url.GetUserName().empty())
+      if (CPasswordManager::GetInstance().IsURLSupported(url) && !url.GetUserName().empty())
       {
         CPasswordManager::GetInstance().SaveAuthenticatedURL(url);
         url.SetPassword("");

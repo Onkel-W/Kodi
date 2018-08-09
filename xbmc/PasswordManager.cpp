@@ -16,6 +16,12 @@
 #include "filesystem/File.h"
 #include "ServiceBroker.h"
 
+CPasswordManager &CPasswordManager::GetInstance()
+{
+  static CPasswordManager sPasswordManager;
+  return sPasswordManager;
+}
+
 CPasswordManager::CPasswordManager()
 {
   m_loaded = false;
