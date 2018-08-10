@@ -419,7 +419,8 @@ bool CApplication::Create(const CAppParamParser &params)
   if (!m_ServiceManager->InitStageOnePointFive())
     return false;
 
-  CSpecialProtocol::RegisterProfileManager(m_ServiceManager->GetProfileManager());
+  const CProfilesManager &profileManager = m_ServiceManager->GetProfileManager();
+  CSpecialProtocol::RegisterProfileManager(profileManager);
 
   CLog::Log(LOGNOTICE, "-----------------------------------------------------------------------");
   CLog::Log(LOGNOTICE, "Starting %s (%s). Platform: %s %s %d-bit", CSysInfo::GetAppName().c_str(), CSysInfo::GetVersion().c_str(),
@@ -530,11 +531,11 @@ bool CApplication::Create(const CAppParamParser &params)
   m_ServiceManager->GetSettings().SetLoaded();
 
   CLog::Log(LOGINFO, "creating subdirectories");
-  CLog::Log(LOGINFO, "userdata folder: %s", CURL::GetRedacted(m_ServiceManager->GetProfileManager().GetProfileUserDataFolder()).c_str());
+  CLog::Log(LOGINFO, "userdata folder: %s", CURL::GetRedacted(profileManager.GetProfileUserDataFolder()).c_str());
   CLog::Log(LOGINFO, "recording folder: %s", CURL::GetRedacted(m_ServiceManager->GetSettings().GetString(CSettings::SETTING_AUDIOCDS_RECORDINGPATH)).c_str());
   CLog::Log(LOGINFO, "screenshots folder: %s", CURL::GetRedacted(m_ServiceManager->GetSettings().GetString(CSettings::SETTING_DEBUG_SCREENSHOTPATH)).c_str());
-  CDirectory::Create(m_ServiceManager->GetProfileManager().GetUserDataFolder());
-  CDirectory::Create(m_ServiceManager->GetProfileManager().GetProfileUserDataFolder());
+  CDirectory::Create(profileManager.GetUserDataFolder());
+  CDirectory::Create(profileManager.GetProfileUserDataFolder());
   m_ServiceManager->GetProfileManager().CreateProfileFolders();
 
   update_emu_environ();//apply the GUI settings
@@ -2810,7 +2811,8 @@ void CApplication::Stop(int exitCode)
     g_sysinfo.SetTotalUptime(g_sysinfo.GetTotalUptime() + (int)(CTimeUtils::GetFrameTime() / 60000));
 
     // Update the settings information (volume, uptime etc. need saving)
-    if (CFile::Exists(m_ServiceManager->GetProfileManager().GetSettingsFile()))
+    const CProfilesManager &profileManager = m_ServiceManager->GetProfileManager();
+    if (CFile::Exists(profileManager.GetSettingsFile()))
     {
       CLog::Log(LOGNOTICE, "Saving settings");
       m_ServiceManager->GetSettings().Save();
@@ -3375,7 +3377,8 @@ void CApplication::OnPlayerCloseFile(const CFileItem &file, const CBookmark &boo
     resumeBookmark.timeInSeconds = 0.0f;
   }
 
-  if (m_ServiceManager->GetProfileManager().GetCurrentProfile().canWriteDatabases())
+  const CProfilesManager &profileManager = m_ServiceManager->GetProfileManager();
+  if (profileManager.GetCurrentProfile().canWriteDatabases())
   {
     CSaveFileState::DoWork(fileItem, resumeBookmark, playCountUpdate);
   }
