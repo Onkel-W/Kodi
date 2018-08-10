@@ -3675,10 +3675,23 @@ bool CApplication::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = false */)
   if (m_screensaverActive && !m_screensaverIdInUse.empty())
   {
     if (m_iScreenSaveLock == 0)
-      if (m_ServiceManager->GetProfileManager().GetMasterProfile().getLockMode() != LOCK_MODE_EVERYONE &&
-          (m_ServiceManager->GetProfileManager().UsingLoginScreen() || m_ServiceManager->GetSettings().GetBool(CSettings::SETTING_MASTERLOCK_STARTUPLOCK)) &&
-          m_ServiceManager->GetProfileManager().GetCurrentProfile().getLockMode() != LOCK_MODE_EVERYONE &&
-          m_screensaverIdInUse != "screensaver.xbmc.builtin.dim" && m_screensaverIdInUse != "screensaver.xbmc.builtin.black" && m_screensaverIdInUse != "visualization")
+    {
+      const CProfilesManager &profileManager = m_ServiceManager->GetProfileManager();
+
+      bool bCheckScreenSaveLock = true;
+
+      if (profileManager.GetMasterProfile().getLockMode() == LOCK_MODE_EVERYONE)
+        bCheckScreenSaveLock = false;
+      else if (profileManager.GetCurrentProfile().getLockMode() == LOCK_MODE_EVERYONE)
+        bCheckScreenSaveLock = false;
+      else if (!profileManager.UsingLoginScreen() && !m_ServiceManager->GetSettings().GetBool(CSettings::SETTING_MASTERLOCK_STARTUPLOCK))
+        bCheckScreenSaveLock = false;
+      else if (m_screensaverIdInUse == "screensaver.xbmc.builtin.dim" ||
+               m_screensaverIdInUse == "screensaver.xbmc.builtin.black" ||
+               m_screensaverIdInUse == "visualization")
+        bCheckScreenSaveLock = false;
+
+      if (bCheckScreenSaveLock)
       {
         m_iScreenSaveLock = 2;
 
@@ -3691,6 +3704,8 @@ bool CApplication::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = false */)
             m_iScreenSaveLock = 1;
         }
       }
+    }
+
     if (m_iScreenSaveLock == -1)
     {
       m_iScreenSaveLock = 0;
