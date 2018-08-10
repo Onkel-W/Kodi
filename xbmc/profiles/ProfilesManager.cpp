@@ -11,31 +11,19 @@
 #include <vector>
 
 #include "ProfilesManager.h"
-#include "DatabaseManager.h"
 #include "FileItem.h"
-#include "GUIInfoManager.h"
-#include "GUIPassword.h"
-#include "PasswordManager.h"
 #include "ServiceBroker.h"
 #include "Util.h"
-#include "addons/Skin.h"
 #include "dialogs/GUIDialogKaiToast.h"
 #include "dialogs/GUIDialogYesNo.h"
 #include "events/EventLog.h"
 #include "events/EventLogManager.h"
 #include "filesystem/Directory.h"
-#include "filesystem/DirectoryCache.h"
 #include "filesystem/File.h"
 #include "filesystem/SpecialProtocol.h"
-#include "guilib/GUIComponent.h"
-#include "guilib/GUIWindowManager.h"
 #include "guilib/LocalizeStrings.h"
-#include "input/InputManager.h"
 #include "settings/Settings.h"
 #include "settings/lib/SettingsManager.h"
-#if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
-#include "storage/DetectDVDType.h"
-#endif
 #include "threads/SingleLock.h"
 #include "utils/FileUtils.h"
 #include "utils/log.h"
@@ -46,16 +34,28 @@
 
 #include "addons/AddonManager.h" //! @todo Remove me
 #include "addons/Service.h" //! @todo Remove me
+#include "addons/Skin.h" //! @todo Remove me
 #include "favourites/FavouritesService.h" //! @todo Remove me
+#include "filesystem/DirectoryCache.h" //! @todo Remove me
+#include "guilib/GUIComponent.h" //! @todo Remove me
+#include "guilib/GUIWindowManager.h" //! @todo Remove me
 #include "guilib/StereoscopicsManager.h" //! @todo Remove me
+#include "input/InputManager.h" //! @todo Remove me
 #include "interfaces/json-rpc/JSONRPC.h" //! @todo Remove me
 #include "network/Network.h" //! @todo Remove me
 #include "network/NetworkServices.h" //! @todo Remove me
 #include "pvr/PVRManager.h" //! @todo Remove me
-#include "video/VideoLibraryQueue.h"//! @todo Remove me
+#if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
+#include "storage/DetectDVDType.h" //! @todo Remove me
+#endif
+#include "video/VideoLibraryQueue.h" //! @todo Remove me
 #include "weather/WeatherManager.h" //! @todo Remove me
 #include "Application.h" //! @todo Remove me
 #include "ContextMenuManager.h" //! @todo Remove me
+#include "DatabaseManager.h" //! @todo Remove me
+#include "GUIInfoManager.h" //! @todo Remove me
+#include "GUIPassword.h" //! @todo Remove me
+#include "PasswordManager.h" //! @todo Remove me
 #include "PlayListPlayer.h" //! @todo Remove me
 
 //! @todo
@@ -94,12 +94,12 @@ CProfilesManager::CProfilesManager(CSettings &settings) :
     CSettings::SETTING_EVENTLOG_SHOW
   };
 
-  m_settings.GetSettingsManager()->RegisterCallback(this, settingSet);
+  m_settings.RegisterCallback(this, settingSet);
 }
 
 CProfilesManager::~CProfilesManager()
 {
-  m_settings.GetSettingsManager()->UnregisterCallback(this);
+  m_settings.UnregisterCallback(this);
   m_settings.GetSettingsManager()->UnregisterSettingsHandler(this);
 }
 
@@ -249,6 +249,7 @@ void CProfilesManager::Clear()
 
 void CProfilesManager::PrepareLoadProfile(unsigned int profileIndex)
 {
+  //! @todo Invert dependencies
   CContextMenuManager &contextMenuManager = CServiceBroker::GetContextMenuManager();
   ADDON::CServiceAddonManager &serviceAddons = CServiceBroker::GetServiceAddons();
   PVR::CPVRManager &pvrManager = CServiceBroker::GetPVRManager();
@@ -269,9 +270,12 @@ bool CProfilesManager::LoadProfile(unsigned int index)
 {
   PrepareLoadProfile(index);
 
+  //! @todo Invert dependencies
+  CGUIWindowManager &windowManager = CServiceBroker::GetGUI()->GetWindowManager();
+
   if (index == 0 && IsMasterProfile())
   {
-    CGUIWindow* pWindow = CServiceBroker::GetGUI()->GetWindowManager().GetWindow(WINDOW_HOME);
+    CGUIWindow* pWindow = windowManager.GetWindow(WINDOW_HOME);
     if (pWindow)
       pWindow->ResetControlStates();
 
@@ -281,6 +285,15 @@ bool CProfilesManager::LoadProfile(unsigned int index)
 
     return true;
   }
+
+  //! @todo Invert dependencies
+  CDatabaseManager &databaseManager = CServiceBroker::GetDatabaseManager();
+  CInputManager &inputManager = CServiceBroker::GetInputManager();
+
+  //! @todo De-globalize and invert dependencies
+  ADDON::CSkinInfo *skinInfo = g_SkinInfo.get();
+  CPasswordManager &passwordManager = CPasswordManager::GetInstance();
+  CDirectoryCache &directoryCache = g_directoryCache;
 
   CSingleLock lock(m_critical);
   // check if the index is valid or not
@@ -293,29 +306,29 @@ bool CProfilesManager::LoadProfile(unsigned int index)
 
   // save any settings of the currently used skin but only if the (master)
   // profile hasn't just been loaded as a temporary profile for login
-  if (g_SkinInfo != nullptr && !m_profileLoadedForLogin)
-    g_SkinInfo->SaveSettings();
+  if (skinInfo != nullptr && !m_profileLoadedForLogin)
+    skinInfo->SaveSettings();
 
   // unload any old settings
-  CServiceBroker::GetSettings().Unload();
+  m_settings.Unload();
 
   SetCurrentProfileId(index);
   m_profileLoadedForLogin = false;
 
   // load the new settings
-  if (!CServiceBroker::GetSettings().Load())
+  if (!m_settings.Load())
   {
     CLog::Log(LOGFATAL, "CProfilesManager: unable to load settings for profile \"%s\"", m_profiles.at(index).getName().c_str());
     return false;
   }
-  CServiceBroker::GetSettings().SetLoaded();
+  m_settings.SetLoaded();
 
   CreateProfileFolders();
 
-  CServiceBroker::GetDatabaseManager().Initialize();
-  CServiceBroker::GetInputManager().LoadKeymaps();
+  databaseManager.Initialize();
 
-  CServiceBroker::GetInputManager().SetMouseEnabled(CServiceBroker::GetSettings().GetBool(CSettings::SETTING_INPUT_ENABLEMOUSE));
+  inputManager.LoadKeymaps();
+  inputManager.SetMouseEnabled(m_settings.GetBool(CSettings::SETTING_INPUT_ENABLEMOUSE));
 
   CGUIComponent* gui = CServiceBroker::GetGUI();
   if (gui)
@@ -331,12 +344,12 @@ bool CProfilesManager::LoadProfile(unsigned int index)
     CXBMCTinyXML doc;
     if (doc.LoadFile(URIUtils::AddFileToFolder(GetUserDataFolder(), "guisettings.xml")))
     {
-      CServiceBroker::GetSettings().LoadSetting(doc.RootElement(), CSettings::SETTING_MASTERLOCK_MAXRETRIES);
-      CServiceBroker::GetSettings().LoadSetting(doc.RootElement(), CSettings::SETTING_MASTERLOCK_STARTUPLOCK);
+      m_settings.LoadSetting(doc.RootElement(), CSettings::SETTING_MASTERLOCK_MAXRETRIES);
+      m_settings.LoadSetting(doc.RootElement(), CSettings::SETTING_MASTERLOCK_STARTUPLOCK);
     }
   }
 
-  CPasswordManager::GetInstance().Clear();
+  passwordManager.Clear();
 
   // to set labels - shares are reloaded
 #if !defined(TARGET_WINDOWS) && defined(HAS_DVD_DRIVE)
@@ -345,10 +358,10 @@ bool CProfilesManager::LoadProfile(unsigned int index)
 
   // init windows
   CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_WINDOW_RESET);
-  CServiceBroker::GetGUI()->GetWindowManager().SendMessage(msg);
+  windowManager.SendMessage(msg);
 
   CUtil::DeleteDirectoryCache();
-  g_directoryCache.Clear();
+  directoryCache.Clear();
 
   lock.Leave();
 
@@ -361,6 +374,7 @@ bool CProfilesManager::LoadProfile(unsigned int index)
 
 void CProfilesManager::FinalizeLoadProfile()
 {
+  //! @todo Invert dependencies
   CContextMenuManager &contextMenuManager = CServiceBroker::GetContextMenuManager();
   ADDON::CServiceAddonManager &serviceAddons = CServiceBroker::GetServiceAddons();
   PVR::CPVRManager &pvrManager = CServiceBroker::GetPVRManager();
@@ -370,6 +384,7 @@ void CProfilesManager::FinalizeLoadProfile()
   CFavouritesService &favouritesManager = CServiceBroker::GetFavouritesService();
   PLAYLIST::CPlayListPlayer &playlistManager = CServiceBroker::GetPlaylistPlayer();
   CStereoscopicsManager &stereoscopicsManager = CServiceBroker::GetGUI()->GetStereoscopicsManager();
+  CGUIWindowManager &windowManager = CServiceBroker::GetGUI()->GetWindowManager();
 
   if (m_lastUsedProfile != m_currentProfile)
   {
@@ -416,38 +431,45 @@ void CProfilesManager::FinalizeLoadProfile()
   // the startup window is considered part of the initialization as it most likely switches to the final window
   bool uiInitializationFinished = firstWindow != WINDOW_STARTUP_ANIM;
 
-  CServiceBroker::GetGUI()->GetWindowManager().ChangeActiveWindow(firstWindow);
+  windowManager.ChangeActiveWindow(firstWindow);
 
   // if the user interfaces has been fully initialized let everyone know
   if (uiInitializationFinished)
   {
     CGUIMessage msg(GUI_MSG_NOTIFY_ALL, 0, 0, GUI_MSG_UI_READY);
-    CServiceBroker::GetGUI()->GetWindowManager().SendThreadMessage(msg);
+    windowManager.SendThreadMessage(msg);
   }
 }
 
 void CProfilesManager::LogOff()
 {
+  //! @todo Invert dependencies
   CNetworkBase &networkManager = CServiceBroker::GetNetwork();
+  CNetworkServices &networkServices = networkManager.GetServices();
+  CGUIWindowManager &windowManager = CServiceBroker::GetGUI()->GetWindowManager();
+
+  //! @todo De-globalize and invert dependencies
+  CGUIPassword &guiPasswordManager = g_passwordManager;
+  CVideoLibraryQueue &videoLibraryQueue = CVideoLibraryQueue::GetInstance();
 
   g_application.StopPlaying();
 
   if (g_application.IsMusicScanning())
     g_application.StopMusicScan();
 
-  if (CVideoLibraryQueue::GetInstance().IsRunning())
-    CVideoLibraryQueue::GetInstance().CancelAllJobs();
+  if (videoLibraryQueue.IsRunning())
+    videoLibraryQueue.CancelAllJobs();
 
   networkManager.NetworkMessage(CNetwork::SERVICES_DOWN, 1);
 
   LoadMasterProfileForLogin();
 
-  g_passwordManager.bMasterUser = false;
+  guiPasswordManager.bMasterUser = false;
 
   g_application.WakeUpScreenSaverAndDPMS();
-  CServiceBroker::GetGUI()->GetWindowManager().ActivateWindow(WINDOW_LOGIN_SCREEN, {}, false);
+  windowManager.ActivateWindow(WINDOW_LOGIN_SCREEN, {}, false);
 
-  if (!CServiceBroker::GetNetwork().GetServices().StartEventServer()) // event server could be needed in some situations
+  if (!networkServices.StartEventServer()) // event server could be needed in some situations
     CGUIDialogKaiToast::QueueNotification(CGUIDialogKaiToast::Warning, g_localizeStrings.Get(33102), g_localizeStrings.Get(33100));
 }
 
