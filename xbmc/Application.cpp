@@ -3681,11 +3681,15 @@ bool CApplication::WakeUpScreenSaver(bool bPowerOffKeyPressed /* = false */)
           m_screensaverIdInUse != "screensaver.xbmc.builtin.dim" && m_screensaverIdInUse != "screensaver.xbmc.builtin.black" && m_screensaverIdInUse != "visualization")
       {
         m_iScreenSaveLock = 2;
-        CGUIMessage msg(GUI_MSG_CHECK_LOCK,0,0);
 
         CGUIWindow* pWindow = CServiceBroker::GetGUI()->GetWindowManager().GetWindow(WINDOW_SCREENSAVER);
         if (pWindow)
-          pWindow->OnMessage(msg);
+        {
+          if (!g_passwordManager.IsProfileLockUnlocked())
+            m_iScreenSaveLock = -1;
+          else
+            m_iScreenSaveLock = 1;
+        }
       }
     if (m_iScreenSaveLock == -1)
     {

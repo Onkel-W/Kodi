@@ -7,7 +7,6 @@
  */
 
 #include "GUIWindowScreensaver.h"
-#include "GUIPassword.h"
 #include "Application.h"
 #include "GUIUserMessages.h"
 #include "ServiceBroker.h"
@@ -77,15 +76,6 @@ bool CGUIWindowScreensaver::OnMessage(CGUIMessage& message)
       m_addon = new ADDON::CScreenSaver(addonBase);
       return m_addon->Start();
     }
-
-  case GUI_MSG_CHECK_LOCK:
-    if (!g_passwordManager.IsProfileLockUnlocked())
-    {
-      g_application.m_iScreenSaveLock = -1;
-      return false;
-    }
-    g_application.m_iScreenSaveLock = 1;
-    return true;
   }
 
   return CGUIWindow::OnMessage(message);
